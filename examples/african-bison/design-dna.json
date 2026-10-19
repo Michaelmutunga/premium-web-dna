@@ -1,0 +1,773 @@
+{
+  "schema_version": "1.0",
+  "framework": "DNA Audit Framework v1",
+  "framework_version": "1.0.0",
+  "meta": {
+    "name": "African Bison Classic Tours",
+    "slug": "african-bison",
+    "version": "1.0.0",
+    "audited_at": "2026-10-19",
+    "source": "https://github.com/Michaelmutunga/African-Bison-Classic-Tours-",
+    "source_commit": "redesign/cinematic-ui",
+    "auditor": "Premium Web DNA",
+    "confidence": 0.9,
+    "licence": "Client-supplied; design principles extracted for internal reuse.",
+    "restrictions": [
+      "No source code or client photography may be redistributed.",
+      "Image credits and licences must be resolved before publication."
+    ]
+  },
+  "archetype": {
+    "primary": "Explorer",
+    "secondary": "Luxury",
+    "tertiary": "Hospitality",
+    "confidence": 0.9,
+    "scores": {
+      "Explorer": 5,
+      "Luxury": 4,
+      "Hospitality": 3,
+      "Editorial": 2
+    },
+    "evidence": [
+      "app/page.tsx:44 full-bleed landscape hero",
+      "app/globals.css:8 earth and ivory palette",
+      "components/motion/draw-path.tsx:12 schematic route drawing"
+    ]
+  },
+  "fingerprint": {
+    "archetype": "Explorer-Luxury",
+    "density": "spacious",
+    "contrast": "high",
+    "motion_style": "cinematic",
+    "cta_style": "confidence-based",
+    "card_style": "bordered",
+    "navbar_style": "masthead"
+  },
+  "tokens": {
+    "colors": {
+      "ink": {
+        "value": "#14120f",
+        "role": "primary text and dark fill",
+        "evidence": [
+          "app/globals.css:10"
+        ]
+      },
+      "ink-soft": {
+        "value": "#2a2620",
+        "role": "secondary dark",
+        "evidence": [
+          "app/globals.css:11"
+        ]
+      },
+      "ivory": {
+        "value": "#faf7f1",
+        "role": "primary surface and light text",
+        "evidence": [
+          "app/globals.css:12"
+        ]
+      },
+      "parchment": {
+        "value": "#f3ede1",
+        "role": "alternate light surface",
+        "evidence": [
+          "app/globals.css:13"
+        ]
+      },
+      "sand": {
+        "value": "#e4d9c4",
+        "role": "warm light surface and accent",
+        "evidence": [
+          "app/globals.css:14"
+        ]
+      },
+      "earth-deep": {
+        "value": "#3d4436",
+        "role": "dark green surface",
+        "evidence": [
+          "app/globals.css:17"
+        ]
+      },
+      "bark-deep": {
+        "value": "#3a2a1c",
+        "role": "deep brown surface",
+        "evidence": [
+          "app/globals.css:19"
+        ]
+      },
+      "night": {
+        "value": "#0e0d0b",
+        "role": "near-black surface",
+        "evidence": [
+          "app/globals.css:20"
+        ]
+      },
+      "clay": {
+        "value": "#b4552d",
+        "role": "action accent",
+        "evidence": [
+          "app/globals.css:21"
+        ]
+      },
+      "clay-deep": {
+        "value": "#8c3f20",
+        "role": "dark accent for small text",
+        "evidence": [
+          "app/globals.css:22"
+        ]
+      }
+    },
+    "typography": {
+      "families": [
+        {
+          "name": "Fraunces",
+          "variable": "--font-display",
+          "role": "display and headlines"
+        },
+        {
+          "name": "Inter",
+          "variable": "--font-sans",
+          "role": "body, labels, UI"
+        }
+      ],
+      "scale": [
+        {
+          "name": "type-mega",
+          "family": "display",
+          "size": "clamp(3.5rem, 11vw, 10rem)",
+          "line_height": 0.95,
+          "tracking": "-0.02em",
+          "weight": 350,
+          "use": "hero and closing phone number"
+        },
+        {
+          "name": "type-display",
+          "family": "display",
+          "size": "clamp(2.75rem, 6vw, 5rem)",
+          "line_height": 1.02,
+          "tracking": "-0.015em",
+          "weight": 560,
+          "use": "large editorial statements"
+        },
+        {
+          "name": "type-h1",
+          "family": "display",
+          "size": "clamp(2rem, 4vw, 3.25rem)",
+          "line_height": 1.08,
+          "tracking": "-0.01em",
+          "weight": 560,
+          "use": "page titles"
+        },
+        {
+          "name": "type-body",
+          "family": "sans",
+          "size": "1.0625rem",
+          "line_height": 1.7,
+          "tracking": "normal",
+          "weight": 400,
+          "use": "reading copy, max 68ch"
+        },
+        {
+          "name": "type-label",
+          "family": "sans",
+          "size": "0.75rem",
+          "line_height": 1.4,
+          "tracking": "0.18em",
+          "weight": 650,
+          "use": "uppercase labels and buttons"
+        }
+      ]
+    },
+    "spacing": {
+      "base": "4px",
+      "scale": [
+        "4px",
+        "8px",
+        "12px",
+        "16px",
+        "20px",
+        "24px",
+        "32px",
+        "40px",
+        "56px",
+        "80px",
+        "112px"
+      ],
+      "section": "py-14 sm:py-20",
+      "feature": "py-20 sm:py-28"
+    },
+    "radii": {
+      "default": "2px",
+      "badge": "9999px",
+      "media": "2px"
+    },
+    "borders": {
+      "hairline_light": "1px solid rgb(20 18 15 / 0.10)",
+      "hairline_strong": "1px solid rgb(20 18 15 / 0.20)",
+      "dark": "1px solid rgb(250 247 241 / 0.15)"
+    },
+    "shadows": {
+      "default": "none",
+      "interaction": "0 10px 30px rgb(14 13 11 / 0.12)"
+    },
+    "motion": {
+      "easings": {
+        "expo": "cubic-bezier(0.16, 1, 0.3, 1)"
+      },
+      "durations": {
+        "quick": "0.35s",
+        "base": "0.7s",
+        "slow": "1.1s"
+      },
+      "exceptions": {
+        "hero_reveal": "0.9s",
+        "ken_burns": "24s",
+        "orbital_ring": "22s linear",
+        "header": "300ms"
+      }
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px"
+    },
+    "z_index": {
+      "header": 40,
+      "overlay": 60,
+      "dialog": 80
+    }
+  },
+  "surfaces": [
+    {
+      "name": "hero",
+      "token": "night",
+      "text_token": "ivory",
+      "role": "cinematic opening"
+    },
+    {
+      "name": "reading",
+      "token": "ivory",
+      "text_token": "ink",
+      "role": "long-form and catalogue"
+    },
+    {
+      "name": "warm",
+      "token": "parchment",
+      "text_token": "ink",
+      "role": "destinations"
+    },
+    {
+      "name": "migration",
+      "token": "earth-deep",
+      "text_token": "ivory",
+      "role": "emotional peak"
+    },
+    {
+      "name": "locality",
+      "token": "bark-deep",
+      "text_token": "ivory",
+      "role": "Nairobi chapter"
+    },
+    {
+      "name": "closing",
+      "token": "night",
+      "text_token": "ivory",
+      "role": "final invitation"
+    }
+  ],
+  "components": [
+    {
+      "id": "hero-editorial",
+      "component": "Hero",
+      "variant": "editorial-full-bleed",
+      "confidence": 0.96,
+      "evidence": [
+        "app/page.tsx:28",
+        "components/motion/descent-hero.tsx:18"
+      ],
+      "anatomy": [
+        "scrim",
+        "eyebrow",
+        "four-line headline",
+        "lede",
+        "two CTAs",
+        "scroll cue"
+      ],
+      "states": [
+        "first-visit",
+        "repeat-visit",
+        "reduced-motion",
+        "calm-mode"
+      ],
+      "responsive": "bottom-aligned stack; mobile crop via picture",
+      "tokens": [
+        "night",
+        "ivory",
+        "sand",
+        "type-mega",
+        "clay"
+      ],
+      "accessibility": "sentence-case accessible name behind the split headline",
+      "motion": "masked line reveal; overlay skipped under reduced motion"
+    },
+    {
+      "id": "section-heading",
+      "component": "SectionHeading",
+      "variant": "eyebrow-title-lede",
+      "confidence": 0.98,
+      "evidence": [
+        "components/marketing-shell.tsx:22",
+        "components/ui/layout.tsx:14"
+      ],
+      "anatomy": [
+        "eyebrow",
+        "title",
+        "lede",
+        "optional link"
+      ],
+      "states": [
+        "light",
+        "dark"
+      ],
+      "responsive": "left-aligned, measure capped",
+      "tokens": [
+        "type-eyebrow",
+        "type-h2",
+        "type-body",
+        "clay-deep",
+        "sand"
+      ],
+      "accessibility": "heading level follows page hierarchy",
+      "motion": "reveal on entry, still fallback"
+    },
+    {
+      "id": "journey-card",
+      "component": "JourneyCard",
+      "variant": "image-editorial",
+      "confidence": 0.95,
+      "evidence": [
+        "components/cards.tsx:44",
+        "app/page.tsx:118"
+      ],
+      "anatomy": [
+        "media",
+        "category",
+        "title",
+        "excerpt",
+        "meta",
+        "link"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-within",
+        "loading"
+      ],
+      "responsive": "one column, two at sm, three at lg",
+      "tokens": [
+        "ivory",
+        "ink",
+        "ink/15",
+        "type-h3",
+        "type-small"
+      ],
+      "accessibility": "title link is the target; no nested interactive elements",
+      "motion": "border and colour change, no lift"
+    },
+    {
+      "id": "destination-tile",
+      "component": "DestinationTile",
+      "variant": "scrim-hover",
+      "confidence": 0.9,
+      "evidence": [
+        "app/page.tsx:196",
+        "components/destinations/destination-tile.tsx:9"
+      ],
+      "anatomy": [
+        "media",
+        "scrim",
+        "label",
+        "name",
+        "hover excerpt"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-within",
+        "touch"
+      ],
+      "responsive": "first tile spans 2x2 at lg",
+      "tokens": [
+        "night",
+        "ivory",
+        "sand",
+        "type-h3"
+      ],
+      "accessibility": "name remains visible without hover; excerpt is supplementary",
+      "motion": "parallax and opacity reveal"
+    },
+    {
+      "id": "button-accent",
+      "component": "Button",
+      "variant": "accent",
+      "confidence": 0.97,
+      "evidence": [
+        "components/ui/button.tsx:31",
+        "components/site-header.tsx:88"
+      ],
+      "anatomy": [
+        "label",
+        "optional icon"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "active",
+        "disabled"
+      ],
+      "responsive": "inline-flex, full width only in forms",
+      "tokens": [
+        "clay",
+        "clay-deep",
+        "ivory",
+        "type-label",
+        "radius-2px"
+      ],
+      "accessibility": "visible focus ring; 44px minimum target",
+      "motion": "colour transition only"
+    },
+    {
+      "id": "mobile-menu",
+      "component": "MobileMenu",
+      "variant": "full-screen-dialog",
+      "confidence": 0.94,
+      "evidence": [
+        "components/site-header.tsx:142",
+        "app/globals.css:186"
+      ],
+      "anatomy": [
+        "native dialog",
+        "close",
+        "oversized links",
+        "orbital mark"
+      ],
+      "states": [
+        "closed",
+        "open",
+        "reduced-motion"
+      ],
+      "responsive": "below lg",
+      "tokens": [
+        "night",
+        "ivory",
+        "sand",
+        "type-h2"
+      ],
+      "accessibility": "native dialog focus management and Escape",
+      "motion": "45ms link stagger, 0.5s rise"
+    },
+    {
+      "id": "itinerary-timeline",
+      "component": "Timeline",
+      "variant": "day-rail",
+      "confidence": 0.93,
+      "evidence": [
+        "components/ui/timeline.tsx:12",
+        "app/tours/[slug]/page.tsx:104"
+      ],
+      "anatomy": [
+        "rail",
+        "day label",
+        "title",
+        "description",
+        "optional image",
+        "metadata"
+      ],
+      "states": [
+        "default",
+        "reduced-motion"
+      ],
+      "responsive": "rail remains on mobile",
+      "tokens": [
+        "clay",
+        "ink/15",
+        "type-label",
+        "type-body"
+      ],
+      "accessibility": "ordered list semantics",
+      "motion": "none"
+    },
+    {
+      "id": "inquiry-form",
+      "component": "InquiryForm",
+      "variant": "stacked",
+      "confidence": 0.9,
+      "evidence": [
+        "components/forms/inquiry-form.tsx:21",
+        "app/contact/page.tsx:44"
+      ],
+      "anatomy": [
+        "visible labels",
+        "inputs",
+        "selects",
+        "textarea",
+        "consent",
+        "submit",
+        "states"
+      ],
+      "states": [
+        "idle",
+        "sending",
+        "sent",
+        "error",
+        "invalid"
+      ],
+      "responsive": "single column; 16px inputs to avoid iOS zoom",
+      "tokens": [
+        "ink/20",
+        "clay",
+        "clay-deep",
+        "ivory",
+        "type-small"
+      ],
+      "accessibility": "aria-invalid, associated errors, visible focus",
+      "motion": "state colour only"
+    },
+    {
+      "id": "footer",
+      "component": "Footer",
+      "variant": "night-four-column",
+      "confidence": 0.96,
+      "evidence": [
+        "components/site-footer.tsx:14"
+      ],
+      "anatomy": [
+        "brand",
+        "statement",
+        "safaris",
+        "company",
+        "contact",
+        "legal"
+      ],
+      "states": [
+        "default"
+      ],
+      "responsive": "one column, two at sm, four at lg",
+      "tokens": [
+        "night",
+        "ivory",
+        "sand",
+        "type-label",
+        "type-small"
+      ],
+      "accessibility": "address and navigation landmarks",
+      "motion": "none"
+    }
+  ],
+  "pages": [
+    {
+      "type": "landing",
+      "sections": [
+        "hero",
+        "marquee",
+        "statement",
+        "signature-journeys",
+        "migration",
+        "route",
+        "destinations",
+        "locality",
+        "trust",
+        "journal",
+        "closing"
+      ],
+      "rules": [
+        "alternate light and dark chapters",
+        "accent budget <= 5 per viewport"
+      ]
+    },
+    {
+      "type": "tour-index",
+      "sections": [
+        "hero",
+        "category-filter",
+        "journey-grid",
+        "empty-state",
+        "cta"
+      ],
+      "rules": [
+        "prices are quote-based on cards"
+      ]
+    },
+    {
+      "type": "tour-detail",
+      "sections": [
+        "breadcrumbs",
+        "hero",
+        "overview",
+        "timeline",
+        "inclusions",
+        "related",
+        "cta"
+      ],
+      "rules": [
+        "structured content, not one HTML blob"
+      ]
+    },
+    {
+      "type": "destination-detail",
+      "sections": [
+        "hero",
+        "overview",
+        "related-tours",
+        "cross-links",
+        "cta"
+      ],
+      "rules": [
+        "no sighting promises"
+      ]
+    },
+    {
+      "type": "contact",
+      "sections": [
+        "hero",
+        "inquiry-form",
+        "address",
+        "response-expectation",
+        "faq"
+      ],
+      "rules": [
+        "visible labels and explicit states"
+      ]
+    },
+    {
+      "type": "portal",
+      "sections": [
+        "shell",
+        "tabs",
+        "summary",
+        "primary-content",
+        "support"
+      ],
+      "rules": [
+        "less cinema; clarity first"
+      ]
+    },
+    {
+      "type": "admin",
+      "sections": [
+        "operations-header",
+        "grouped-nav",
+        "tables",
+        "filters",
+        "dialogs"
+      ],
+      "rules": [
+        "density over motion",
+        "sticky nav at 24px"
+      ]
+    }
+  ],
+  "rules": {
+    "do": [
+      "Use one display serif and one sans family.",
+      "Use clay as the only action accent.",
+      "Use 2px corners on rectangles and full pills only for badges and chips.",
+      "Use hairlines instead of shadows.",
+      "Alternate ivory, sand, earth-deep, bark-deep and night chapters.",
+      "Use 68ch measure for reading copy.",
+      "Give every image a specific alt or a designed placeholder.",
+      "Prefer honest hedges over invented certainty."
+    ],
+    "dont": [
+      "Do not add a third font family.",
+      "Do not add a second accent colour or blue links.",
+      "Do not use glassmorphism or backdrop-blur on content.",
+      "Do not use decorative gradients; scrims are for media only.",
+      "Do not use clay for normal text on night.",
+      "Do not round 2px corners into 12px or 16px.",
+      "Do not invent reviews, awards, prices, availability or sighting guarantees.",
+      "Do not hide the only excerpt behind hover on touch devices."
+    ],
+    "max_font_families": 2,
+    "accent_budget_per_viewport": 5,
+    "corner_radius": "2px",
+    "motion_easing": "cubic-bezier(0.16, 1, 0.3, 1)",
+    "hero": {
+      "preferred_variant": "editorial-full-bleed",
+      "headline_length": "4 lines, 8-16 words",
+      "cta_count": 2
+    }
+  },
+  "scores": {
+    "framework": "DNA Audit Framework v1",
+    "framework_version": "1.0.0",
+    "total": 88,
+    "band": "Premium",
+    "categories": {
+      "visual_system": {
+        "max": 20,
+        "score": 18,
+        "note": "Coherent cinematic system with a memorable hero and surface rhythm."
+      },
+      "ux_architecture": {
+        "max": 15,
+        "score": 13,
+        "note": "Clear navigation and commitment ladder; some hover-only excerpts."
+      },
+      "typography": {
+        "max": 10,
+        "score": 9,
+        "note": "Disciplined two-family scale with strong display contrast."
+      },
+      "spacing": {
+        "max": 10,
+        "score": 9,
+        "note": "Consistent 4px rhythm and 56/80 or 80/112 section padding."
+      },
+      "brand_distinction": {
+        "max": 10,
+        "score": 9,
+        "note": "Explorer-Luxury posture is recognisable without the logo."
+      },
+      "trust_signals": {
+        "max": 10,
+        "score": 9,
+        "note": "Real contact details, live counts, honest pricing language."
+      },
+      "motion": {
+        "max": 10,
+        "score": 8,
+        "note": "One purposeful family with complete fallbacks; hero video is heavy."
+      },
+      "accessibility": {
+        "max": 5,
+        "score": 4,
+        "note": "Strong focus and semantics; inactive tab contrast failure."
+      },
+      "performance": {
+        "max": 5,
+        "score": 4,
+        "note": "Good image strategy; 9.2 MB hero video exceeds budget."
+      },
+      "content_quality": {
+        "max": 5,
+        "score": 5,
+        "note": "Specific, honest, place-led copy."
+      }
+    }
+  },
+  "provenance": {
+    "source": "https://github.com/Michaelmutunga/African-Bison-Classic-Tours-",
+    "source_commit": "redesign/cinematic-ui",
+    "audit_date": "2026-10-19",
+    "auditor": "Premium Web DNA",
+    "licence": "Client-supplied; design principles extracted for internal reuse.",
+    "restrictions": [
+      "No source code or client photography may be redistributed.",
+      "Image credits and licences must be resolved before publication."
+    ],
+    "evidence_count": 31,
+    "notes": "Example DNA used as the worked reference for the framework. Replace values for a real client."
+  }
+}

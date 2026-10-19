@@ -1,0 +1,20 @@
+{
+  "name": "premium-web-dna",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Global Skill Creator for premium web design DNA: audit, score, fingerprint, generate, and merge reusable design-intelligence skills.",
+  "scripts": {
+    "scan": "node scripts/scan-design-signals.mjs",
+    "contrast": "node scripts/contrast.mjs",
+    "compile": "node scripts/compile-ai-layer.mjs",
+    "scaffold": "node scripts/scaffold-dna-skill.mjs",
+    "merge": "node scripts/merge-dna.mjs",
+    "validate": "node scripts/validate-dna-skill.mjs",
+    "capture": "node scripts/capture-site.mjs",
+    "test": "node --test \"tests/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

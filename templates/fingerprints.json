@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "framework": "DNA Audit Framework v1",
+  "framework_version": "1.0.0",
+  "default": "Explorer-Luxury",
+  "fingerprints": {
+    "Explorer-Luxury": {
+      "archetype": "Explorer-Luxury",
+      "density": "spacious",
+      "contrast": "high",
+      "motion_style": "cinematic",
+      "cta_style": "confidence-based",
+      "card_style": "bordered",
+      "navbar_style": "masthead"
+    },
+    "Explorer-Luxury@mobile": {
+      "density": "balanced",
+      "navbar_style": "minimal"
+    },
+    "Explorer-Luxury@admin": {
+      "density": "compact",
+      "motion_style": "static",
+      "card_style": "flat"
+    }
+  }
+}

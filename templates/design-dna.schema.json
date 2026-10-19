@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://premium-web-dna.local/schemas/design-dna.schema.json",
+  "title": "Premium Web DNA",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "framework",
+    "framework_version",
+    "meta",
+    "archetype",
+    "fingerprint",
+    "tokens",
+    "surfaces",
+    "components",
+    "pages",
+    "rules",
+    "scores",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "framework": { "type": "string", "const": "DNA Audit Framework v1" },
+    "framework_version": { "type": "string" },
+    "meta": {
+      "type": "object",
+      "required": ["name", "slug", "version", "audited_at", "source", "confidence", "licence"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "version": { "type": "string" },
+        "audited_at": { "type": "string" },
+        "source": { "type": "string" },
+        "source_commit": { "type": "string" },
+        "auditor": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "licence": { "type": "string" },
+        "restrictions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "archetype": {
+      "type": "object",
+      "required": ["primary", "confidence", "evidence"],
+      "properties": {
+        "primary": { "type": "string" },
+        "secondary": { "type": "string" },
+        "tertiary": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scores": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0, "maximum": 5 } },
+        "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "fingerprint": {
+      "type": "object",
+      "required": ["archetype", "density", "contrast", "motion_style", "cta_style", "card_style", "navbar_style"],
+      "properties": {
+        "archetype": { "type": "string" },
+        "density": { "enum": ["compact", "balanced", "spacious", "editorial"] },
+        "contrast": { "enum": ["low", "medium", "high", "extreme"] },
+        "motion_style": { "enum": ["static", "subtle", "smooth", "cinematic", "expressive"] },
+        "cta_style": { "enum": ["direct", "confidence-based", "consultative", "urgency", "minimal"] },
+        "card_style": { "enum": ["flat", "bordered", "elevated", "editorial", "immersive"] },
+        "navbar_style": { "enum": ["solid", "transparent", "transparent-blur", "minimal", "masthead"] }
+      }
+    },
+    "tokens": { "type": "object" },
+    "surfaces": { "type": "array", "items": { "type": "object" } },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "component", "variant", "confidence", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "component": { "type": "string" },
+          "variant": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "anatomy": { "type": "array", "items": { "type": "string" } },
+          "states": { "type": "array", "items": { "type": "string" } },
+          "responsive": { "type": "string" },
+          "tokens": { "type": "array", "items": { "type": "string" } },
+          "accessibility": { "type": "string" },
+          "motion": { "type": "string" }
+        }
+      }
+    },
+    "pages": { "type": "array", "items": { "type": "object" } },
+    "rules": {
+      "type": "object",
+      "required": ["do", "dont"],
+      "properties": {
+        "do": { "type": "array", "items": { "type": "string" } },
+        "dont": { "type": "array", "items": { "type": "string" } },
+        "max_font_families": { "type": "integer", "minimum": 1 },
+        "accent_budget_per_viewport": { "type": "integer", "minimum": 0 },
+        "corner_radius": { "type": "string" },
+        "motion_easing": { "type": "string" },
+        "hero": { "type": "object" }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "required": ["total", "band", "categories"],
+      "properties": {
+        "framework": { "type": "string" },
+        "framework_version": { "type": "string" },
+        "total": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "band": { "enum": ["Exceptional", "Premium", "Professional", "Functional", "Weak"] },
+        "categories": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["max", "score"],
+            "properties": {
+              "max": { "type": "integer" },
+              "score": { "type": "integer" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source", "licence", "evidence_count"],
+      "properties": {
+        "source": { "type": "string" },
+        "source_commit": { "type": "string" },
+        "audit_date": { "type": "string" },
+        "auditor": { "type": "string" },
+        "licence": { "type": "string" },
+        "restrictions": { "type": "array", "items": { "type": "string" } },
+        "evidence_count": { "type": "integer", "minimum": 0 },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
