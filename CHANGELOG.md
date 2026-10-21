@@ -48,6 +48,7 @@ All notable changes to this project are recorded here. The format follows
 - Missing accessibility findings in the structured DNA.
 - Merged DNA omitted `surfaces`, accessibility, release status, and blocker
   provenance.
+- Scanner evidence line lookup is now logarithmic instead of quadratic.
 
 ## [1.0.0] - 2026-10-19
 

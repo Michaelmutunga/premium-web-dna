@@ -20,6 +20,10 @@ The worked reference for DNA Audit Framework v1.
 | `DESIGN-DNA-AUDIT.md` | The evidence-backed audit narrative |
 | `design-dna.json` | The structured source of truth |
 
+## Release decision
+
+Kept as the blocked worked reference. It is not a release candidate. Do not mark it `released` without rights clearance, a compliant hero video, and a new audit version.
+
 ## Release blockers
 
 | ID | Severity | Finding |

@@ -46,6 +46,7 @@ test("extracts tokens and evidence from CSS", () => {
   assert.ok(result.spacing.some((entry) => entry.name === "--space-section"));
   assert.ok(result.z_index.some((entry) => entry.value === "40"));
   assert.equal(result.colors[0].evidence[0].file, "app/globals.css");
+  assert.equal(result.colors[0].evidence[0].line, 2);
 });
 
 test("scans a repository, skips ignored folders, and keeps relative evidence", async () => {

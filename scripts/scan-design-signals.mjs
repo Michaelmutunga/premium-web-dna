@@ -57,12 +57,23 @@ function normalizeValue(value) {
   return value.replace(/\s+/g, " ").trim().slice(0, 300);
 }
 
-function lineAt(text, index) {
-  let line = 1;
-  for (let cursor = 0; cursor < index; cursor += 1) {
-    if (text.charCodeAt(cursor) === 10) line += 1;
+function lineStarts(text) {
+  const starts = [0];
+  for (let index = 0; index < text.length; index += 1) {
+    if (text.charCodeAt(index) === 10) starts.push(index + 1);
   }
-  return line;
+  return starts;
+}
+
+function lineAt(starts, index) {
+  let low = 0;
+  let high = starts.length - 1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if (starts[middle] <= index) low = middle + 1;
+    else high = middle - 1;
+  }
+  return high + 1;
 }
 
 function add(map, value, evidence, limit = MAX_EVIDENCE) {
@@ -120,8 +131,9 @@ export function parseDesignText(text, file = "input.css") {
   const breakpoints = new Set();
   const zIndex = new Map();
   const spacing = new Map();
+  const starts = lineStarts(text);
 
-  const evidence = (index) => ({ file: file.replaceAll("\\", "/"), line: lineAt(text, index) });
+  const evidence = (index) => ({ file: file.replaceAll("\\", "/"), line: lineAt(starts, index) });
 
   const customPropertyPattern = /(--[a-zA-Z0-9_-]+)\s*:\s*([^;{}]+);/g;
   for (const match of text.matchAll(customPropertyPattern)) {
