@@ -124,7 +124,9 @@ npx playwright install chromium
 node scripts/capture-site.mjs --url https://example.com --out runtime/example
 ```
 
-Capture refuses private, loopback, link-local, and credential-bearing URLs by default. It caps response size, validates redirects, and redacts `set-cookie`, `authorization`, and related headers. Use `--allow-private-network` only for an intentional local audit. Playwright can still follow subresource requests inside the browser; the private-network check covers the initial navigation.
+Capture refuses private, loopback, link-local, reserved, and credential-bearing URLs by default. It caps response size, validates redirects, and redacts `set-cookie`, `authorization`, and related headers. Use `--allow-private-network` only for an intentional local audit.
+
+DNS is checked before the request, but the request resolves the hostname again; a DNS-rebinding target could change address between those steps. Playwright can also follow subresource requests inside the browser. The private-network check covers the initial navigation, not every browser subresource. Treat runtime capture as untrusted and run it in an isolated environment.
 
 Only capture sites you are authorised to audit.
 
@@ -151,7 +153,7 @@ Only capture sites you are authorised to audit.
 | `references/16-evolution-protocol.md` | Library growth and versioning |
 | `templates/` | Placeholder audit, DNA, rules, fingerprints, scorecard, and JSON Schemas |
 | `scripts/` | Zero-dependency runtime audit and validation tools |
-| `scripts/lib/` | Schema, evidence-count, and merge helpers |
+| `scripts/lib/` | Schema, validation, evidence-count, merge, and network-policy helpers |
 | `scripts/verify-repo.mjs` | Link, frontmatter, template, and example verification |
 | `examples/` | Audit-complete, blocked, and queued client audits |
 | `tests/` | Unit, integration, schema, and validator tests |
@@ -177,7 +179,7 @@ New-Item -ItemType Directory -Force -Path $dest | Out-Null
 robocopy . $dest /E /XD .git .github node_modules generated capture runtime tests coverage
 ```
 
-The skill is self-contained. It needs Node 20+ for the scripts and no runtime dependencies. Development checks use Ajv and Biome as `devDependencies`.
+The skill is self-contained. It needs Node 22+ for the scripts and no runtime dependencies. Development checks use Ajv and Biome as `devDependencies`.
 
 ## Design principles
 

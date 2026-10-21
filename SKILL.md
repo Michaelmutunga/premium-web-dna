@@ -355,7 +355,7 @@ node scripts/merge-dna.mjs \
   --out generated/premium-web-dna-v2.json
 ```
 
-The merge engine preserves sources, records conflicts, merges surfaces and accessibility evidence, combines corroborated component confidence, and emits a merge report plus provenance with release status and blockers.
+The merge engine validates both inputs before merging, preserves sources, records conflicts, merges surfaces and accessibility evidence, combines corroborated component confidence, and emits a validated merge report plus provenance with release status and blockers.
 
 Read [references/13-dna-merge-engine.md](references/13-dna-merge-engine.md).
 

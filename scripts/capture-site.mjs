@@ -4,6 +4,7 @@ import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { isPrivateAddress } from "./lib/network-policy.mjs";
 
 const DEFAULT_VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900 },
@@ -42,34 +43,6 @@ function normaliseUrl(input) {
     throw new Error("url must not contain credentials");
   }
   return url;
-}
-
-function isPrivateAddress(address) {
-  const value = address.toLowerCase().replace(/^\[|\]$/g, "");
-  const version = isIP(value);
-  if (version === 4) {
-    const [a, b] = value.split(".").map(Number);
-    return (
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      (a === 100 && b >= 64 && b <= 127) ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      a >= 224
-    );
-  }
-  if (version === 6) {
-    if (value === "::" || value === "::1") return true;
-    if (/^f[cd]/.test(value)) return true;
-    if (/^fe[89ab]/.test(value)) return true;
-    if (/^ff/.test(value)) return true;
-    const mapped = value.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-    if (mapped) return isPrivateAddress(mapped[1]);
-    return false;
-  }
-  return false;
 }
 
 async function assertPublicHost(hostname, allowPrivateNetwork) {

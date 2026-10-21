@@ -4,21 +4,24 @@ All notable changes to this project are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project follows
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.1.0] - 2026-10-21
 
 ### Added
 
 - JSON Schema validation for `design-dna.json`, `ai-rules.json`, and
   `fingerprints.json`.
+- Shared DNA validation used by both the skill validator and the merge engine.
 - `accessibility` and `provenance.status` contracts, including publication
   blockers and open P0 checks.
 - Structured evidence counting and validation.
 - `npm run verify` repository checks for links, frontmatter, template hygiene,
   and example scaffolding.
-- Cross-platform CI matrix for Node 20 and 22 on Ubuntu and Windows.
+- Cross-platform CI matrix for Node 22 and 24 on Ubuntu and Windows.
 - Biome linting and an Ajv schema oracle in the test suite.
 - MIT and CC BY 4.0 licence files with a client-content exclusion notice.
-- `SECURITY.md` and `CONTRIBUTING.md`.
+- `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, Dependabot, and LF
+  normalisation.
+- Table-driven network-policy tests for special-use IPv4 and IPv6 ranges.
 
 ### Changed
 
@@ -28,19 +31,26 @@ All notable changes to this project are recorded here. The format follows
   accent budgets, or motion values.
 - Existing 1.0 DNA must add an `accessibility` object and a
   `provenance.status`; blocked audits must list `publication_blockers`.
-- African Bison is recorded as `Audit complete` with release blocked by two open
-  P0 findings.
+- African Bison is recorded as `blocked`, with release blocked by two open P0
+  findings.
 - The test command now uses `node --test` for Windows and POSIX parity.
 - The merge engine now emits `surfaces`, `accessibility`, release status,
   publication blockers, and a recomputed evidence count.
+- The merge engine now rejects invalid inputs and invalid merged output instead
+  of writing a partial or invented package.
+- Node 22 is now the minimum supported runtime.
 
 ### Security
 
-- Capture rejects credential-bearing, private, loopback, link-local, and
-  reserved targets by default.
+- Capture rejects credential-bearing, private, loopback, link-local,
+  documentation, benchmarking, multicast, and reserved targets by default.
 - Capture validates redirects, caps response and HTML size, and redacts
   sensitive response headers.
 - Capture validates viewport, timeout, byte, and redirect limits.
+- The capture address classifier now covers IPv4-mapped, NAT64, 6to4, Teredo,
+  ORCHID, and special-use IPv6 ranges.
+- Runtime capture documents the DNS-rebinding and browser-subresource
+  limitations instead of treating the host check as a network sandbox.
 
 ### Fixed
 

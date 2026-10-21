@@ -1,9 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeDna } from "../scripts/merge-dna.mjs";
+import { scaffoldSkill } from "../scripts/scaffold-dna-skill.mjs";
+import { validateSkillDir } from "../scripts/validate-dna-skill.mjs";
 import { structuredEvidenceCount } from "../scripts/lib/dna-metrics.mjs";
 import { validateAgainstSchema } from "../scripts/lib/json-schema.mjs";
 
@@ -45,6 +48,7 @@ function makeOther(base) {
   other.scores.categories.visual_system.score = 14;
   other.scores.total = 84;
   other.scores.band = "Premium";
+  other.provenance.evidence_count = structuredEvidenceCount(other);
   return other;
 }
 
@@ -156,7 +160,64 @@ test("rejects inputs without accessibility evidence", async () => {
   const base = await loadBase();
   const other = makeOther(base);
   delete other.accessibility;
-  assert.throws(() => mergeDna(base, other, { mode: "blend" }), /accessibility\.wcag_level/);
+  assert.throws(() => mergeDna(base, other, { mode: "blend" }), /accessibility/);
+});
+
+test("rejects inputs without a WCAG level", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  delete other.accessibility.wcag_level;
+  assert.throws(() => mergeDna(base, other, { mode: "blend" }), /wcag_level/);
+});
+
+test("rejects an invalid base before merging", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  base.meta.licence = "";
+  assert.throws(
+    () => mergeDna(base, other, { mode: "blend" }),
+    /base DNA is invalid:[\s\S]*meta\.licence is required/,
+  );
+});
+
+test("rejects an invalid overlay before merging", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  other.scores.total += 1;
+  assert.throws(
+    () => mergeDna(base, other, { mode: "blend" }),
+    /other DNA is invalid:[\s\S]*scores\.total/,
+  );
+});
+
+test("rejects an invalid merged result", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  assert.throws(
+    () => mergeDna(base, other, { mode: "blend", slug: "Invalid Slug" }),
+    /merged DNA is invalid:[\s\S]*meta\.slug/,
+  );
+});
+
+test("merged output scaffolds into a valid skill", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  const merged = mergeDna(base, other, { mode: "blend" });
+  const out = await mkdtemp(path.join(os.tmpdir(), "dna-merge-skill-"));
+  try {
+    await scaffoldSkill({
+      dna: merged,
+      slug: merged.meta.slug,
+      name: merged.meta.name,
+      out,
+      validate: false,
+    });
+    const result = await validateSkillDir(out);
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.errors, []);
+  } finally {
+    await rm(out, { recursive: true, force: true });
+  }
 });
 
 test("merged output carries accessibility, status, and a matching evidence count", async () => {

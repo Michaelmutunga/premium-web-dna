@@ -1,11 +1,24 @@
 #!/usr/bin/env node
 import { readFile, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { structuredEvidenceCount } from "./lib/dna-metrics.mjs";
+import { validateDnaDocument } from "./lib/dna-validation.mjs";
 
+const DNA_SCHEMA = JSON.parse(
+  readFileSync(new URL("../templates/design-dna.schema.json", import.meta.url), "utf8"),
+);
 const MODES = ["inherit", "blend", "synthesize"];
+
+function assertValidDna(dna, label) {
+  const result = validateDnaDocument(dna, DNA_SCHEMA, label);
+  if (result.errors.length > 0) {
+    throw new Error(`${label} DNA is invalid:\n${result.errors.map((error) => `  - ${error}`).join("\n")}`);
+  }
+}
+
 const FINGERPRINT_FIELDS = [
   "archetype",
   "density",
@@ -491,7 +504,7 @@ function mergeProvenance(base = {}, other = {}, mode, baseMeta, otherMeta, confl
     blockers.push("Merged from a blocked audit; the original blocker was not recorded.");
   }
   return {
-    source: [...new Set([baseMeta?.source, otherMeta?.source].filter(Boolean))].join(" + ") || "unknown",
+    source: [...new Set([baseMeta?.source, otherMeta?.source].filter(Boolean))].join(" + "),
     licence: unique([base.licence, other.licence]).join(" / "),
     evidence_count: (base.evidence_count ?? 0) + (other.evidence_count ?? 0),
     status: wasBlocked || blockers.length > 0 ? "blocked" : "audit-complete",
@@ -507,6 +520,8 @@ export function mergeDna(baseInput, otherInput, options = {}) {
   if (!baseInput || !otherInput) throw new Error("Both DNA inputs are required");
   const mode = options.mode ?? "blend";
   if (!MODES.includes(mode)) throw new Error(`mode must be one of: ${MODES.join(", ")}`);
+  assertValidDna(baseInput, "base");
+  assertValidDna(otherInput, "other");
   const baseHash = hashDna(baseInput);
   const otherHash = hashDna(otherInput);
   const base = clone(baseInput);
@@ -680,6 +695,13 @@ export function mergeDna(baseInput, otherInput, options = {}) {
   merged.provenance.evidence_count = structuredEvidenceCount(merged);
   merged.merge_report.conflict_count = uniqueConflicts.length;
   merged.merge_report.conflicts = uniqueConflicts;
+
+  const mergedResult = validateDnaDocument(merged, DNA_SCHEMA, "merged DNA");
+  if (mergedResult.errors.length > 0) {
+    throw new Error(
+      `merged DNA is invalid:\n${mergedResult.errors.map((error) => `  - ${error}`).join("\n")}`,
+    );
+  }
 
   return merged;
 }

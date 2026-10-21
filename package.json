@@ -1,6 +1,6 @@
 {
   "name": "premium-web-dna",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Global Skill Creator for premium web design DNA: audit, score, fingerprint, generate, and merge reusable design-intelligence skills.",
@@ -19,7 +19,7 @@
     "check": "npm run lint && npm test && npm run verify"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

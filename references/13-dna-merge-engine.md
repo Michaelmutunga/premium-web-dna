@@ -189,6 +189,14 @@ The source files still hold their original scores and evidence. The merged outpu
 
 ## Validation
 
+Both inputs must pass the same schema and semantic checks as
+`validate-dna-skill.mjs` before merging starts. The engine labels failures as
+`base DNA is invalid` or `other DNA is invalid` and writes nothing when either
+input is invalid.
+
+The merged result is validated again before it is returned. A merge therefore
+fails instead of emitting an invalid package or inventing placeholder provenance.
+
 The merged DNA is not a skill until it is scaffolded. Validate the generated package:
 
 ```bash

@@ -25,6 +25,20 @@ Security-sensitive areas include:
 - `scripts/merge-dna.mjs`, which processes untrusted JSON;
 - any command that writes outside the intended output directory.
 
+## Capture network policy
+
+`scripts/capture-site.mjs` refuses credential-bearing URLs and non-public network
+targets by default. The address classifier covers private, loopback, link-local,
+multicast, documentation, benchmarking, and reserved IPv4/IPv6 ranges, including
+IPv4-mapped, NAT64, and 6to4 forms.
+
+The hostname is resolved before capture, but the request performs its own DNS
+resolution. A DNS-rebinding target could therefore change address between the
+check and the request. Playwright can also load subresources that were not part of
+the initial navigation check. Do not treat runtime capture as a network sandbox.
+Run it in an isolated environment, use `--allow-private-network` only for an
+intentional local audit, and review captured output before sharing it.
+
 ## Audit authorisation
 
 Only audit sites and repositories you are authorised to inspect. Runtime capture
