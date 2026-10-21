@@ -69,6 +69,9 @@ TOTAL               100
 ## Quick start
 
 ```bash
+# 0. Install development dependencies (Biome and Ajv)
+npm ci
+
 # 1. Scan a repository for design signals
 node scripts/scan-design-signals.mjs ../client-site --out signals.json
 
@@ -108,6 +111,9 @@ node scripts/scaffold-dna-skill.mjs \
 # 7. Validate any generated skill
 node scripts/validate-dna-skill.mjs generated/client-name-design-dna
 node scripts/validate-dna-skill.mjs generated/premium-web-dna-v2
+
+# 8. Run the repository checks
+npm run check
 ```
 
 Optional runtime capture:
@@ -117,6 +123,8 @@ npm install --no-save playwright
 npx playwright install chromium
 node scripts/capture-site.mjs --url https://example.com --out runtime/example
 ```
+
+Capture refuses private, loopback, link-local, and credential-bearing URLs by default. It caps response size, validates redirects, and redacts `set-cookie`, `authorization`, and related headers. Use `--allow-private-network` only for an intentional local audit. Playwright can still follow subresource requests inside the browser; the private-network check covers the initial navigation.
 
 Only capture sites you are authorised to audit.
 
@@ -141,18 +149,21 @@ Only capture sites you are authorised to audit.
 | `references/14-design-fingerprint.md` | Fingerprint vocabulary |
 | `references/15-ai-consumption.md` | Agent-readable JSON layer |
 | `references/16-evolution-protocol.md` | Library growth and versioning |
-| `templates/` | Audit, DNA, rules, fingerprints, scorecard |
-| `scripts/` | Zero-dependency audit and validation tools |
-| `examples/` | Completed and queued client audits |
+| `templates/` | Placeholder audit, DNA, rules, fingerprints, scorecard, and JSON Schemas |
+| `scripts/` | Zero-dependency runtime audit and validation tools |
+| `scripts/lib/` | Schema, evidence-count, and merge helpers |
+| `scripts/verify-repo.mjs` | Link, frontmatter, template, and example verification |
+| `examples/` | Audit-complete, blocked, and queued client audits |
+| `tests/` | Unit, integration, schema, and validator tests |
 
 ## Examples
 
-| Client | Status | Archetype | Score | Fingerprint |
-|---|---|---|---|---|
-| African Bison Classic Tours | Complete | Explorer / Luxury / Hospitality | 88 | Explorer-Luxury |
-| Queensland Nuts | Queued | - | - | - |
-| Muta Automations | Queued | - | - | - |
-| TCDL | Queued | - | - | - |
+| Client | Status | Release | Archetype | Score | Fingerprint |
+|---|---|---|---|---|---|
+| African Bison Classic Tours | Audit complete | Blocked: 2 open P0s | Explorer / Luxury / Hospitality | 88 | Explorer-Luxury |
+| Queensland Nuts | Queued | - | - | - | - |
+| Muta Automations | Queued | - | - | - | - |
+| TCDL | Queued | - | - | - | - |
 
 Queued examples contain no invented DNA. They are placeholders until a real extraction runs.
 
@@ -163,10 +174,10 @@ Copy the package into the personal skills directory:
 ```powershell
 $dest = "$env:USERPROFILE\.agents\skills\web-design\premium-web-dna"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
-robocopy . $dest /E /XD .git node_modules generated capture runtime
+robocopy . $dest /E /XD .git .github node_modules generated capture runtime tests coverage
 ```
 
-The skill is self-contained. It needs Node 20+ for the scripts and no runtime dependencies.
+The skill is self-contained. It needs Node 20+ for the scripts and no runtime dependencies. Development checks use Ajv and Biome as `devDependencies`.
 
 ## Design principles
 
@@ -181,3 +192,11 @@ The skill is self-contained. It needs Node 20+ for the scripts and no runtime de
 ## Legal
 
 Use this framework only on sites and repositories you are authorised to inspect. Generated skills contain design principles and measurements, not source assets. Read `references/11-legal-and-ethics.md` before publishing or redistributing anything derived from a client.
+
+## Licence
+
+- Scripts and tooling: MIT. See `LICENSE-MIT`.
+- Framework documentation, references, and templates: CC BY 4.0. See `LICENSE-CC-BY-4.0`.
+- Client audits, client assets, and generated client skills: not licensed by this repository. See `NOTICE`.
+
+If a file contains a different licence notice, that notice takes precedence.

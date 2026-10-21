@@ -1,0 +1,12 @@
+Premium Web DNA is dual-licensed by content type.
+
+- Scripts and tooling under `scripts/`, `tests/`, and `package.json`:
+  MIT. See `LICENSE-MIT`.
+- Framework documentation, references, and templates under `references/`,
+  `templates/`, `SKILL.md`, and `README.md`: CC BY 4.0. See
+  `LICENSE-CC-BY-4.0`.
+- Client audits, client assets, and generated client skills: not licensed by
+  this repository. They remain the property of the client or their respective
+  owners. See `NOTICE`.
+
+If a file contains a different licence notice, that notice takes precedence.
