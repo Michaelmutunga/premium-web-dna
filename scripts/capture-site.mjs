@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from "node:fs/promises";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -7,6 +9,18 @@ const DEFAULT_VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900 },
   { name: "mobile", width: 390, height: 844, isMobile: true },
 ];
+const DEFAULT_MAX_BYTES = 10 * 1024 * 1024;
+const DEFAULT_MAX_REDIRECTS = 5;
+const SENSITIVE_HEADERS = new Set([
+  "authorization",
+  "cookie",
+  "proxy-authorization",
+  "set-cookie",
+  "set-cookie2",
+  "www-authenticate",
+  "proxy-authenticate",
+  "x-api-key",
+]);
 
 async function loadPlaywright() {
   for (const specifier of ["playwright", "playwright-core"]) {
@@ -24,7 +38,125 @@ function normaliseUrl(input) {
   if (!["http:", "https:"].includes(url.protocol)) {
     throw new Error("url must use http or https");
   }
+  if (url.username || url.password) {
+    throw new Error("url must not contain credentials");
+  }
   return url;
+}
+
+function isPrivateAddress(address) {
+  const value = address.toLowerCase().replace(/^\[|\]$/g, "");
+  const version = isIP(value);
+  if (version === 4) {
+    const [a, b] = value.split(".").map(Number);
+    return (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      a >= 224
+    );
+  }
+  if (version === 6) {
+    if (value === "::" || value === "::1") return true;
+    if (/^f[cd]/.test(value)) return true;
+    if (/^fe[89ab]/.test(value)) return true;
+    if (/^ff/.test(value)) return true;
+    const mapped = value.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+    if (mapped) return isPrivateAddress(mapped[1]);
+    return false;
+  }
+  return false;
+}
+
+async function assertPublicHost(hostname, allowPrivateNetwork) {
+  if (allowPrivateNetwork) return;
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".localhost")) {
+    throw new Error(`refusing to capture private host "${host}" (pass --allow-private-network to override)`);
+  }
+  if (isIP(host)) {
+    if (isPrivateAddress(host)) {
+      throw new Error(`refusing to capture private address "${host}" (pass --allow-private-network to override)`);
+    }
+    return;
+  }
+  let addresses;
+  try {
+    addresses = await lookup(host, { all: true, verbatim: true });
+  } catch (error) {
+    throw new Error(`could not resolve "${host}": ${error.message}`);
+  }
+  if (addresses.length === 0) throw new Error(`could not resolve "${host}"`);
+  if (addresses.some(({ address }) => isPrivateAddress(address))) {
+    throw new Error(`refusing to capture private address for "${host}" (pass --allow-private-network to override)`);
+  }
+}
+
+function redactHeaders(headers) {
+  const output = {};
+  for (const [key, value] of Object.entries(headers)) {
+    output[key] = SENSITIVE_HEADERS.has(key.toLowerCase()) ? "[redacted]" : value;
+  }
+  return output;
+}
+
+async function readTextLimited(response, maxBytes) {
+  const declared = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    throw new Error(`response is ${declared} bytes, above the ${maxBytes} byte limit`);
+  }
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        throw new Error(`response exceeded the ${maxBytes} byte limit`);
+      }
+      chunks.push(Buffer.from(value));
+    }
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+async function fetchWithCheckedRedirects(url, options) {
+  let current = url;
+  for (let redirects = 0; redirects <= options.maxRedirects; redirects += 1) {
+    const parsed = normaliseUrl(current);
+    await assertPublicHost(parsed.hostname, options.allowPrivateNetwork);
+    const response = await fetch(parsed, {
+      headers: { "user-agent": options.userAgent },
+      redirect: "manual",
+      signal: AbortSignal.timeout(options.timeout),
+    });
+    if (response.status >= 300 && response.status < 400 && response.headers.get("location")) {
+      if (redirects === options.maxRedirects) {
+        throw new Error(`too many redirects (limit ${options.maxRedirects})`);
+      }
+      current = new URL(response.headers.get("location"), parsed).toString();
+      continue;
+    }
+    return { response, finalUrl: parsed.toString() };
+  }
+  throw new Error(`too many redirects (limit ${options.maxRedirects})`);
+}
+
+function parsePositiveInteger(value, name, maximum, minimum = 1) {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < minimum || number > maximum) {
+    throw new Error(`${name} must be an integer from ${minimum} to ${maximum} (received "${value}")`);
+  }
+  return number;
 }
 
 function parseViewport(value) {
@@ -32,8 +164,8 @@ function parseViewport(value) {
   if (!match) throw new Error(`viewport must look like 1440x900 or 390x844:mobile (received "${value}")`);
   return {
     name: match[3] ?? `${match[1]}x${match[2]}`,
-    width: Number(match[1]),
-    height: Number(match[2]),
+    width: parsePositiveInteger(match[1], "viewport width", 10000),
+    height: parsePositiveInteger(match[2], "viewport height", 10000),
   };
 }
 
@@ -42,17 +174,13 @@ function safeName(value) {
 }
 
 async function captureWithFetch(url, outDir, options) {
-  const response = await fetch(url, {
-    headers: { "user-agent": options.userAgent },
-    redirect: "follow",
-    signal: AbortSignal.timeout(options.timeout),
-  });
+  const { response, finalUrl } = await fetchWithCheckedRedirects(url, options);
   if (!response.ok) throw new Error(`Request failed with ${response.status} ${response.statusText}`);
-  const html = await response.text();
+  const html = await readTextLimited(response, options.maxBytes);
   await writeFile(path.join(outDir, "page.html"), html, "utf8");
   await writeFile(
     path.join(outDir, "headers.json"),
-    `${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\n`,
+    `${JSON.stringify(redactHeaders(Object.fromEntries(response.headers.entries())), null, 2)}\n`,
     "utf8",
   );
   const links = [...html.matchAll(/<link[^>]+href=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1]);
@@ -63,8 +191,13 @@ async function captureWithFetch(url, outDir, options) {
     captured_at: new Date().toISOString(),
     warning:
       "Playwright is not installed. Only HTML and response headers were captured. Install playwright for screenshots, computed styles, and interaction states.",
-    final_url: response.url,
+    final_url: finalUrl,
     status: response.status,
+    limits: {
+      max_bytes: options.maxBytes,
+      max_redirects: options.maxRedirects,
+      allow_private_network: options.allowPrivateNetwork,
+    },
     links,
     scripts,
   };
@@ -81,6 +214,11 @@ async function captureWithPlaywright(playwright, url, outDir, options) {
     mode: "playwright",
     captured_at: new Date().toISOString(),
     browser: "chromium",
+    limits: {
+      max_bytes: options.maxBytes,
+      max_redirects: options.maxRedirects,
+      allow_private_network: options.allowPrivateNetwork,
+    },
     viewports: [],
     warnings: [],
   };
@@ -192,7 +330,11 @@ async function captureWithPlaywright(playwright, url, outDir, options) {
       });
 
       if (!htmlSaved) {
-        await writeFile(path.join(outDir, "page.html"), await page.content(), "utf8");
+        const html = await page.content();
+        if (Buffer.byteLength(html, "utf8") > options.maxBytes) {
+          throw new Error(`page HTML exceeded the ${options.maxBytes} byte limit`);
+        }
+        await writeFile(path.join(outDir, "page.html"), html, "utf8");
         htmlSaved = true;
       }
       await writeFile(
@@ -219,12 +361,30 @@ async function captureWithPlaywright(playwright, url, outDir, options) {
 }
 
 export async function captureSite(options) {
-  const url = normaliseUrl(options.url).toString();
+  const parsedUrl = normaliseUrl(options.url);
+  const allowPrivateNetwork = Boolean(options.allowPrivateNetwork);
+  await assertPublicHost(parsedUrl.hostname, allowPrivateNetwork);
+  const url = parsedUrl.toString();
   const outDir = path.resolve(options.out ?? "capture");
   await mkdir(outDir, { recursive: true });
+  const viewports = (options.viewports?.length ? options.viewports : DEFAULT_VIEWPORTS).map(
+    (viewport) => ({
+      ...viewport,
+      width: parsePositiveInteger(viewport.width, "viewport width", 10000),
+      height: parsePositiveInteger(viewport.height, "viewport height", 10000),
+    }),
+  );
   const config = {
-    viewports: options.viewports?.length ? options.viewports : DEFAULT_VIEWPORTS,
-    timeout: options.timeout ?? 45000,
+    viewports,
+    timeout: parsePositiveInteger(options.timeout ?? 45000, "timeout", 300000),
+    maxBytes: parsePositiveInteger(options.maxBytes ?? DEFAULT_MAX_BYTES, "maxBytes", 100 * 1024 * 1024),
+    maxRedirects: parsePositiveInteger(
+      options.maxRedirects ?? DEFAULT_MAX_REDIRECTS,
+      "maxRedirects",
+      20,
+      0,
+    ),
+    allowPrivateNetwork,
     fullPage: options.fullPage !== false,
     reducedMotion: Boolean(options.reducedMotion),
     userAgent:
@@ -244,6 +404,9 @@ function parseArgs(argv) {
     else if (arg === "--out") options.out = argv[++index];
     else if (arg === "--viewport") options.viewports.push(parseViewport(argv[++index]));
     else if (arg === "--timeout") options.timeout = Number(argv[++index]);
+    else if (arg === "--max-bytes") options.maxBytes = Number(argv[++index]);
+    else if (arg === "--max-redirects") options.maxRedirects = Number(argv[++index]);
+    else if (arg === "--allow-private-network") options.allowPrivateNetwork = true;
     else if (arg === "--reduced-motion") options.reducedMotion = true;
     else if (arg === "--no-full-page") options.fullPage = false;
     else if (arg === "--no-playwright") options.playwright = false;
@@ -257,7 +420,7 @@ function parseArgs(argv) {
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help || !options.url) {
-    console.log("Usage: node scripts/capture-site.mjs --url <https://...> --out <capture-dir> [--viewport 1440x900] [--viewport 390x844:mobile] [--timeout 45000] [--reduced-motion] [--no-full-page] [--no-playwright] [--json]");
+    console.log("Usage: node scripts/capture-site.mjs --url <https://...> --out <capture-dir> [--viewport 1440x900] [--viewport 390x844:mobile] [--timeout 45000] [--max-bytes 10485760] [--max-redirects 5] [--allow-private-network] [--reduced-motion] [--no-full-page] [--no-playwright] [--json]");
     if (!options.help) process.exitCode = 1;
     return;
   }

@@ -200,7 +200,7 @@ Static source is the default because it is reproducible and cheap. Runtime evide
 - a page is only available through a browser;
 - the audit needs screenshots for a stakeholder.
 
-Use `scripts/capture-site.mjs` only with authorisation. Record the browser, viewport, date, and URL.
+Use `scripts/capture-site.mjs` only with authorisation. Record the browser, viewport, date, and URL. Capture is public-only by default, caps response and HTML size, validates redirects, and redacts sensitive headers. Use `--allow-private-network` only for an intentional local audit.
 
 ## Audit limits
 
@@ -228,7 +228,7 @@ source: https://github.com/org/repo
 source_commit: abc1234
 audit_date: 2026-10-19
 auditor: Name
-status: complete
+status: audit-complete
 confidence: 0.90
 ---
 ```
