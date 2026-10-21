@@ -3,26 +3,100 @@
   "$id": "https://premium-web-dna.local/schemas/fingerprints.schema.json",
   "title": "Premium Web DNA Fingerprints",
   "type": "object",
-  "required": ["schema_version", "framework", "framework_version", "default", "fingerprints"],
+  "required": [
+    "schema_version",
+    "framework",
+    "framework_version",
+    "default",
+    "fingerprints"
+  ],
   "properties": {
-    "schema_version": { "type": "string" },
-    "framework": { "type": "string", "const": "DNA Audit Framework v1" },
-    "framework_version": { "type": "string" },
-    "default": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "framework": {
+      "type": "string",
+      "const": "DNA Audit Framework v1"
+    },
+    "framework_version": {
+      "type": "string"
+    },
+    "default": {
+      "type": "string"
+    },
     "fingerprints": {
       "type": "object",
       "minProperties": 1,
       "additionalProperties": {
         "type": "object",
-        "required": ["archetype", "density", "contrast", "motion_style", "cta_style", "card_style", "navbar_style"],
+        "required": [
+          "archetype",
+          "density",
+          "contrast",
+          "motion_style",
+          "cta_style",
+          "card_style",
+          "navbar_style"
+        ],
         "properties": {
-          "archetype": { "type": "string" },
-          "density": { "enum": ["compact", "balanced", "spacious", "editorial"] },
-          "contrast": { "enum": ["low", "medium", "high", "extreme"] },
-          "motion_style": { "enum": ["static", "subtle", "smooth", "cinematic", "expressive"] },
-          "cta_style": { "enum": ["direct", "confidence-based", "consultative", "urgency", "minimal"] },
-          "card_style": { "enum": ["flat", "bordered", "elevated", "editorial", "immersive"] },
-          "navbar_style": { "enum": ["solid", "transparent", "transparent-blur", "minimal", "masthead"] }
+          "archetype": {
+            "type": "string"
+          },
+          "density": {
+            "enum": [
+              "compact",
+              "balanced",
+              "spacious",
+              "editorial"
+            ]
+          },
+          "contrast": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "extreme"
+            ]
+          },
+          "motion_style": {
+            "enum": [
+              "static",
+              "subtle",
+              "smooth",
+              "cinematic",
+              "expressive"
+            ]
+          },
+          "cta_style": {
+            "enum": [
+              "direct",
+              "confidence-based",
+              "consultative",
+              "urgency",
+              "minimal"
+            ]
+          },
+          "card_style": {
+            "enum": [
+              "flat",
+              "bordered",
+              "elevated",
+              "editorial",
+              "immersive"
+            ]
+          },
+          "navbar_style": {
+            "enum": [
+              "solid",
+              "transparent",
+              "transparent-blur",
+              "minimal",
+              "masthead"
+            ]
+          }
         }
       }
     }

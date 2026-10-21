@@ -50,11 +50,13 @@ Each input must be a valid `design-dna.json` with:
 - `archetype`;
 - `fingerprint`;
 - `tokens`;
+- `surfaces`;
 - `components` with confidence and evidence;
 - `pages`;
 - `rules`;
+- `accessibility`;
 - `scores`;
-- `provenance`.
+- `provenance` with `status`.
 
 The engine records a SHA-256 hash of each input in `merge_report.inputs` and in `provenance.parents`.
 
@@ -100,6 +102,10 @@ Deep merge:
 
 A colour is a discrete decision. It is not mixed.
 
+### Surfaces
+
+Match by `name`. Keep the base order, then append overlay-only surfaces. Merge `token`, `text_token`, and `role` by mode and weight, and record conflicts.
+
 ### Components
 
 Match by `id`, then by `component + variant`.
@@ -124,6 +130,12 @@ Components only in an overlay are added with their original confidence and evide
 
 Match by `type`. Union sections in base order, then append new overlay sections. Union rules. Record conflicts.
 
+### Accessibility
+
+- Union issues by `id`; keep the higher-severity record when the same issue appears twice.
+- Union contrast pairs by foreground, background, and context.
+- Keep the stricter WCAG level across inputs.
+
 ### Rules
 
 - `do` and `dont` arrays are unioned.
@@ -146,10 +158,13 @@ The command writes a single merged DNA file, for example `generated/premium-web-
 
 It contains:
 
-- the merged `design-dna.json` structure;
+- the merged `design-dna.json` structure, including `surfaces` and `accessibility`;
 - `tokens.aliases` for token conflicts;
 - `merge_report` with mode, inputs, hashes, weights, and conflicts;
-- `provenance.parents` with source metadata and hashes.
+- `provenance.parents` with source metadata and hashes;
+- `provenance.status` set to `blocked` when either input was blocked or blockers remain, otherwise `audit-complete`;
+- `provenance.publication_blockers` unioned from both inputs;
+- `provenance.evidence_count` recomputed from the merged structure.
 
 Generate a skill from it when the merged DNA is ready:
 

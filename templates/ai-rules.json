@@ -1,125 +1,75 @@
 {
+  "_template": true,
+  "_note": "This file is compiled from design-dna.json by scripts/compile-ai-layer.mjs. Do not hand-edit a generated ai-rules.json. This template shows the contract only.",
+  "$schema": "https://premium-web-dna.local/schemas/ai-rules.schema.json",
   "schema_version": "1.0",
   "framework": "DNA Audit Framework v1",
   "framework_version": "1.0.0",
   "source": {
-    "name": "African Bison Classic Tours",
-    "slug": "african-bison",
+    "name": "{{CLIENT_NAME}}",
+    "slug": "{{client-slug}}",
     "version": "1.0.0"
   },
-  "archetype": "Explorer-Luxury",
+  "archetype": "{{PRIMARY_ARCHETYPE}}-{{SECONDARY_ARCHETYPE}}",
   "fingerprint": {
-    "archetype": "Explorer-Luxury",
-    "density": "spacious",
-    "contrast": "high",
-    "motion_style": "cinematic",
-    "cta_style": "confidence-based",
-    "card_style": "bordered",
-    "navbar_style": "masthead"
+    "archetype": "{{PRIMARY_ARCHETYPE}}-{{SECONDARY_ARCHETYPE}}",
+    "density": "{{density}}",
+    "contrast": "{{contrast}}",
+    "motion_style": "{{motion_style}}",
+    "cta_style": "{{cta_style}}",
+    "card_style": "{{card_style}}",
+    "navbar_style": "{{navbar_style}}"
   },
   "global": {
-    "max_font_families": 2,
-    "accent_budget_per_viewport": 5,
-    "corner_radius": "2px",
-    "motion_easing": "cubic-bezier(0.16, 1, 0.3, 1)",
+    "max_font_families": 0,
+    "accent_budget_per_viewport": 0,
+    "corner_radius": "{{RADIUS}}",
+    "motion_easing": "{{EASING}}",
     "forbidden": [
-      "Do not add a third font family.",
-      "Do not add a second accent colour or blue links.",
-      "Do not use glassmorphism or backdrop-blur on content.",
-      "Do not use decorative gradients; scrims are for media only.",
-      "Do not use clay for normal text on night.",
-      "Do not round 2px corners into 12px or 16px.",
-      "Do not invent reviews, awards, prices, availability or sighting guarantees.",
-      "Do not hide the only excerpt behind hover on touch devices."
+      "{{FORBIDDEN_RULE}}"
     ]
   },
   "tokens": {
-    "colors": {
-      "ink": { "value": "#14120f", "role": "primary text and dark fill" },
-      "ivory": { "value": "#faf7f1", "role": "primary surface and light text" },
-      "sand": { "value": "#e4d9c4", "role": "warm light surface and accent" },
-      "earth-deep": { "value": "#3d4436", "role": "dark green surface" },
-      "bark-deep": { "value": "#3a2a1c", "role": "deep brown surface" },
-      "night": { "value": "#0e0d0b", "role": "near-black surface" },
-      "clay": { "value": "#b4552d", "role": "action accent" },
-      "clay-deep": { "value": "#8c3f20", "role": "dark accent for small text" }
-    },
+    "colors": {},
     "typography": {
-      "families": [
-        { "name": "Fraunces", "variable": "--font-display", "role": "display and headlines" },
-        { "name": "Inter", "variable": "--font-sans", "role": "body, labels, UI" }
-      ],
-      "scale": [
-        { "name": "type-mega", "size": "clamp(3.5rem, 11vw, 10rem)", "weight": 350 },
-        { "name": "type-h1", "size": "clamp(2rem, 4vw, 3.25rem)", "weight": 560 },
-        { "name": "type-body", "size": "1.0625rem", "weight": 400 },
-        { "name": "type-label", "size": "0.75rem", "weight": 650 }
-      ]
+      "families": [],
+      "scale": []
     },
-    "spacing": {
-      "base": "4px",
-      "section": "py-14 sm:py-20",
-      "feature": "py-20 sm:py-28"
-    },
-    "radii": {
-      "default": "2px",
-      "badge": "9999px"
-    },
-    "borders": {
-      "hairline_light": "1px solid rgb(20 18 15 / 0.10)",
-      "dark": "1px solid rgb(250 247 241 / 0.15)"
-    },
-    "motion": {
-      "easings": {
-        "expo": "cubic-bezier(0.16, 1, 0.3, 1)"
-      },
-      "durations": {
-        "quick": "0.35s",
-        "base": "0.7s",
-        "slow": "1.1s"
-      }
-    }
+    "spacing": {},
+    "radii": {},
+    "borders": {},
+    "motion": {}
   },
   "hero": {
-    "preferred_variant": "editorial-full-bleed",
-    "headline_length": "4 lines, 8-16 words",
-    "cta_count": 2
+    "preferred_variant": "{{variant}}",
+    "headline_length": "{{HEADLINE_LENGTH}}",
+    "cta_count": 0
   },
   "components": [
-    { "id": "hero-editorial", "component": "Hero", "variant": "editorial-full-bleed", "confidence": 0.96 },
-    { "id": "section-heading", "component": "SectionHeading", "variant": "eyebrow-title-lede", "confidence": 0.98 },
-    { "id": "journey-card", "component": "JourneyCard", "variant": "image-editorial", "confidence": 0.95 },
-    { "id": "destination-tile", "component": "DestinationTile", "variant": "scrim-hover", "confidence": 0.9 },
-    { "id": "button-accent", "component": "Button", "variant": "accent", "confidence": 0.97 },
-    { "id": "mobile-menu", "component": "MobileMenu", "variant": "full-screen-dialog", "confidence": 0.94 },
-    { "id": "itinerary-timeline", "component": "Timeline", "variant": "day-rail", "confidence": 0.93 },
-    { "id": "inquiry-form", "component": "InquiryForm", "variant": "stacked", "confidence": 0.9 },
-    { "id": "footer", "component": "Footer", "variant": "night-four-column", "confidence": 0.96 }
+    {
+      "id": "{{component-id}}",
+      "component": "{{ComponentName}}",
+      "variant": "{{variant}}",
+      "confidence": 0
+    }
   ],
   "pages": [
-    { "type": "landing", "sections": ["hero", "marquee", "statement", "signature-journeys", "migration", "route", "destinations", "locality", "trust", "journal", "closing"] },
-    { "type": "tour-index", "sections": ["hero", "category-filter", "journey-grid", "empty-state", "cta"] },
-    { "type": "tour-detail", "sections": ["breadcrumbs", "hero", "overview", "timeline", "inclusions", "related", "cta"] },
-    { "type": "contact", "sections": ["hero", "inquiry-form", "address", "response-expectation", "faq"] }
+    {
+      "type": "{{page-type}}",
+      "sections": [
+        "{{section}}"
+      ],
+      "rules": [
+        "{{RULE}}"
+      ]
+    }
   ],
   "rules": {
     "do": [
-      "Use one display serif and one sans family.",
-      "Use clay as the only action accent.",
-      "Use 2px corners on rectangles and full pills only for badges and chips.",
-      "Use hairlines instead of shadows.",
-      "Alternate ivory, sand, earth-deep, bark-deep and night chapters.",
-      "Use 68ch measure for reading copy."
+      "{{DO_RULE}}"
     ],
     "dont": [
-      "Do not add a third font family.",
-      "Do not add a second accent colour or blue links.",
-      "Do not use glassmorphism or backdrop-blur on content.",
-      "Do not use decorative gradients; scrims are for media only.",
-      "Do not use clay for normal text on night.",
-      "Do not round 2px corners into 12px or 16px.",
-      "Do not invent reviews, awards, prices, availability or sighting guarantees.",
-      "Do not hide the only excerpt behind hover on touch devices."
+      "{{DONT_RULE}}"
     ]
   }
 }

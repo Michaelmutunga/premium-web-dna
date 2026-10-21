@@ -1,26 +1,20 @@
 {
+  "_template": true,
+  "_note": "This file is compiled from design-dna.json by scripts/compile-ai-layer.mjs. Do not hand-edit a generated fingerprints.json. This template shows the contract only.",
+  "$schema": "https://premium-web-dna.local/schemas/fingerprints.schema.json",
   "schema_version": "1.0",
   "framework": "DNA Audit Framework v1",
   "framework_version": "1.0.0",
-  "default": "Explorer-Luxury",
+  "default": "{{PRIMARY_ARCHETYPE}}-{{SECONDARY_ARCHETYPE}}",
   "fingerprints": {
-    "Explorer-Luxury": {
-      "archetype": "Explorer-Luxury",
-      "density": "spacious",
-      "contrast": "high",
-      "motion_style": "cinematic",
-      "cta_style": "confidence-based",
-      "card_style": "bordered",
-      "navbar_style": "masthead"
-    },
-    "Explorer-Luxury@mobile": {
-      "density": "balanced",
-      "navbar_style": "minimal"
-    },
-    "Explorer-Luxury@admin": {
-      "density": "compact",
-      "motion_style": "static",
-      "card_style": "flat"
+    "{{PRIMARY_ARCHETYPE}}-{{SECONDARY_ARCHETYPE}}": {
+      "archetype": "{{PRIMARY_ARCHETYPE}}-{{SECONDARY_ARCHETYPE}}",
+      "density": "{{density}}",
+      "contrast": "{{contrast}}",
+      "motion_style": "{{motion_style}}",
+      "cta_style": "{{cta_style}}",
+      "card_style": "{{card_style}}",
+      "navbar_style": "{{navbar_style}}"
     }
   }
 }

@@ -2,7 +2,12 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { validateAgainstSchema } from "./lib/json-schema.mjs";
+import { structuredEvidenceCount } from "./lib/dna-metrics.mjs";
+
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const TEMPLATE_DIR = path.resolve(SCRIPT_DIR, "..", "templates");
 
 const REQUIRED_FILES = [
   "SKILL.md",
@@ -62,6 +67,15 @@ async function exists(file) {
 
 async function readJson(file) {
   return JSON.parse(await readFile(file, "utf8"));
+}
+
+const schemaCache = new Map();
+
+async function loadSchema(name) {
+  if (!schemaCache.has(name)) {
+    schemaCache.set(name, await readJson(path.join(TEMPLATE_DIR, name)));
+  }
+  return schemaCache.get(name);
 }
 
 function parseFrontmatter(text) {
@@ -242,6 +256,10 @@ export async function validateSkillDir(directory) {
   }
 
   if (dna) {
+    const dnaSchema = await loadSchema("design-dna.schema.json");
+    errors.push(
+      ...validateAgainstSchema(dna, dnaSchema).map((error) => `design-dna.json schema ${error}`),
+    );
     if (dna.schema_version !== "1.0") errors.push("design-dna.json schema_version must be 1.0");
     if (dna.framework !== "DNA Audit Framework v1") {
       errors.push("design-dna.json framework must be DNA Audit Framework v1");
@@ -264,7 +282,7 @@ export async function validateSkillDir(directory) {
     }
 
     checkFingerprint(dna.fingerprint, "design-dna.json fingerprint", errors);
-    if (!dna.archetype || !dna.archetype.primary) {
+    if (!dna.archetype?.primary) {
       errors.push("design-dna.json archetype.primary is required");
     } else {
       if (!Array.isArray(dna.archetype.evidence) || dna.archetype.evidence.length === 0) {
@@ -360,6 +378,47 @@ export async function validateSkillDir(directory) {
       if (!dna.provenance.licence) errors.push("provenance.licence is required");
       if (!Number.isInteger(dna.provenance.evidence_count)) {
         errors.push("provenance.evidence_count must be an integer");
+      } else {
+        const computed = structuredEvidenceCount(dna);
+        if (dna.provenance.evidence_count !== computed) {
+          errors.push(
+            `provenance.evidence_count is ${dna.provenance.evidence_count} but structured citations total ${computed}`,
+          );
+        }
+      }
+      if (dna.provenance.status === "released") {
+        const openP0 = (dna.accessibility?.issues ?? []).filter(
+          (issue) => issue.severity === "P0" && issue.status === "open",
+        );
+        if (openP0.length > 0) {
+          errors.push(
+            `provenance.status cannot be released while P0 issues are open: ${openP0.map((issue) => issue.id).join(", ")}`,
+          );
+        }
+        if ((dna.provenance.publication_blockers ?? []).length > 0) {
+          errors.push("provenance.status released cannot have publication_blockers");
+        }
+      }
+      if (dna.provenance.status === "blocked" && (dna.provenance.publication_blockers ?? []).length === 0) {
+        errors.push("provenance.status blocked requires at least one publication_blocker");
+      }
+    }
+
+    const placeholderPattern = /\b(?:unknown|see provenance|todo|tbd|lorem ipsum)\b/i;
+    for (const [label, value] of [
+      ["meta.source", dna.meta?.source],
+      ["meta.licence", dna.meta?.licence],
+      ["provenance.source", dna.provenance?.source],
+      ["provenance.licence", dna.provenance?.licence],
+    ]) {
+      if (typeof value === "string" && placeholderPattern.test(value)) {
+        errors.push(`design-dna.json ${label} contains placeholder text: ${value}`);
+      }
+    }
+
+    for (const [name, category] of Object.entries(dna.scores?.categories ?? {})) {
+      if (category.max > 0 && category.score < category.max && !String(category.note ?? "").trim()) {
+        errors.push(`scores.categories.${name}.note is required when the category is below its maximum`);
       }
     }
   }
@@ -372,6 +431,13 @@ export async function validateSkillDir(directory) {
     } catch (error) {
       errors.push(`ai-rules.json is not valid JSON: ${error.message}`);
     }
+  }
+
+  if (aiRules) {
+    const aiSchema = await loadSchema("ai-rules.schema.json");
+    errors.push(
+      ...validateAgainstSchema(aiRules, aiSchema).map((error) => `ai-rules.json schema ${error}`),
+    );
   }
 
   if (aiRules && dna) {
@@ -391,7 +457,7 @@ export async function validateSkillDir(directory) {
     if (!aiRules.global || !Array.isArray(aiRules.global.forbidden)) {
       errors.push("ai-rules.json global.forbidden must be an array");
     }
-    if (!aiRules.hero || !aiRules.hero.preferred_variant) {
+    if (!aiRules.hero?.preferred_variant) {
       errors.push("ai-rules.json hero.preferred_variant is required");
     }
     const dnaIds = new Set((dna.components ?? []).map((component) => component.id));
@@ -420,6 +486,12 @@ export async function validateSkillDir(directory) {
   }
 
   if (fingerprints) {
+    const fingerprintSchema = await loadSchema("fingerprints.schema.json");
+    errors.push(
+      ...validateAgainstSchema(fingerprints, fingerprintSchema).map(
+        (error) => `fingerprints.json schema ${error}`,
+      ),
+    );
     if (!fingerprints.default) errors.push("fingerprints.json default is required");
     if (!fingerprints.fingerprints || typeof fingerprints.fingerprints !== "object") {
       errors.push("fingerprints.json fingerprints must be an object");

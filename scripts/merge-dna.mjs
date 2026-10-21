@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { structuredEvidenceCount } from "./lib/dna-metrics.mjs";
 
 const MODES = ["inherit", "blend", "synthesize"];
 const FINGERPRINT_FIELDS = [
@@ -448,13 +449,53 @@ function inputRecords(role, dna, meta, hash) {
   return [{ role, slug: meta?.slug, sha256: hash }];
 }
 
+function mergeAccessibility(base = {}, other = {}) {
+  if (!base.wcag_level || !other.wcag_level) {
+    throw new Error("Both DNA inputs must include accessibility.wcag_level");
+  }
+  const levels = { A: 1, AA: 2, AAA: 3 };
+  const issues = new Map();
+  const pairs = new Map();
+  for (const issue of [...(base.issues ?? []), ...(other.issues ?? [])]) {
+    if (!issue?.id) throw new Error("accessibility.issues entries must have an id");
+    const existing = issues.get(issue.id);
+    if (!existing) {
+      issues.set(issue.id, issue);
+      continue;
+    }
+    const severity = { P0: 0, P1: 1, P2: 2, P3: 3 };
+    const moreSevere = severity[issue.severity] < severity[existing.severity];
+    const moreOpen = existing.status !== "open" && issue.status === "open";
+    if (moreSevere || moreOpen) issues.set(issue.id, issue);
+  }
+  for (const pair of [...(base.contrast_pairs ?? []), ...(other.contrast_pairs ?? [])]) {
+    if (!pair?.foreground || !pair?.background || !pair?.context) {
+      throw new Error("accessibility.contrast_pairs entries need foreground, background, and context");
+    }
+    pairs.set(`${pair.foreground}|${pair.background}|${pair.context}`, pair);
+  }
+  const level = [base.wcag_level, other.wcag_level].filter(Boolean).sort((a, b) => levels[b] - levels[a])[0];
+  return {
+    wcag_level: level,
+    issues: [...issues.values()],
+    contrast_pairs: [...pairs.values()],
+  };
+}
+
 function mergeProvenance(base = {}, other = {}, mode, baseMeta, otherMeta, conflicts, hashes = {}) {
   const baseParents = base.parents?.length ? base.parents : [parentRecord(baseMeta, hashes.base)];
   const otherParents = other.parents?.length ? other.parents : [parentRecord(otherMeta, hashes.other)];
+  const blockers = unique([...(base.publication_blockers ?? []), ...(other.publication_blockers ?? [])]);
+  const wasBlocked = base.status === "blocked" || other.status === "blocked";
+  if (wasBlocked && blockers.length === 0) {
+    blockers.push("Merged from a blocked audit; the original blocker was not recorded.");
+  }
   return {
     source: [...new Set([baseMeta?.source, otherMeta?.source].filter(Boolean))].join(" + ") || "unknown",
     licence: unique([base.licence, other.licence]).join(" / "),
     evidence_count: (base.evidence_count ?? 0) + (other.evidence_count ?? 0),
+    status: wasBlocked || blockers.length > 0 ? "blocked" : "audit-complete",
+    publication_blockers: blockers,
     restrictions: unique([...(base.restrictions ?? []), ...(other.restrictions ?? [])]),
     notes: `${base.notes ?? ""}\nMerged with mode "${mode}". ${conflicts.length} conflict(s) recorded in merge_report.`.trim(),
     parents: dedupeByHash([...baseParents, ...otherParents]),
@@ -504,10 +545,12 @@ export function mergeDna(baseInput, otherInput, options = {}) {
     fingerprint: {},
     archetype: {},
     tokens: {},
+    surfaces: [],
     components: [],
     pages: [],
     rules: {},
     scores: {},
+    accessibility: {},
     provenance: {},
     merge_report: {
       mode,
@@ -603,6 +646,16 @@ export function mergeDna(baseInput, otherInput, options = {}) {
     ...aliases,
   };
 
+  merged.surfaces = mergeNamedArray(
+    base.surfaces ?? [],
+    other.surfaces ?? [],
+    "name",
+    mode,
+    wa,
+    wb,
+    "surfaces",
+    conflicts,
+  );
   merged.components = mergeComponents(base.components ?? [], other.components ?? [], mode, wa, wb, conflicts);
 
   merged.pages = mergeNamedArray(base.pages ?? [], other.pages ?? [], "type", mode, wa, wb, "pages", conflicts);
@@ -613,6 +666,7 @@ export function mergeDna(baseInput, otherInput, options = {}) {
 
   merged.rules = mergeRules(base.rules, other.rules, mode, wa, wb, conflicts);
   merged.scores = mergeScores(base.scores, other.scores, mode, wa, wb, conflicts);
+  merged.accessibility = mergeAccessibility(base.accessibility, other.accessibility);
   const uniqueConflicts = dedupeConflicts([...inheritedConflicts, ...conflicts]);
   merged.provenance = mergeProvenance(
     base.provenance,
@@ -623,6 +677,7 @@ export function mergeDna(baseInput, otherInput, options = {}) {
     uniqueConflicts,
     { base: baseHash, other: otherHash },
   );
+  merged.provenance.evidence_count = structuredEvidenceCount(merged);
   merged.merge_report.conflict_count = uniqueConflicts.length;
   merged.merge_report.conflicts = uniqueConflicts;
 

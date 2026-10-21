@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildAiLayer, buildFingerprints } from "./compile-ai-layer.mjs";
 import { validateSkillDir } from "./validate-dna-skill.mjs";
+import { structuredEvidenceCount } from "./lib/dna-metrics.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SKILL_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -36,9 +37,16 @@ function stripPrivate(value) {
   );
 }
 
-function normaliseDna(input, { slug, name }) {
+function requireText(value, label) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`${label} is required and must be a non-empty string`);
+  }
+}
+
+function normaliseDna(input, { slug, name, allowIncomplete = false }) {
   if (!input || typeof input !== "object") throw new Error("DNA must be an object");
   const dna = stripPrivate(structuredClone(input));
+
   dna.schema_version ??= "1.0";
   dna.framework ??= "DNA Audit Framework v1";
   dna.framework_version ??= "1.0.0";
@@ -46,10 +54,13 @@ function normaliseDna(input, { slug, name }) {
   dna.meta.name = name;
   dna.meta.slug = slug;
   dna.meta.version ??= "1.0.0";
-  dna.meta.audited_at ??= new Date().toISOString().slice(0, 10);
-  dna.meta.confidence ??= 0.8;
-  dna.meta.source ??= "unknown";
-  dna.meta.licence ??= "See provenance";
+
+  const missingMeta = [];
+  for (const field of ["audited_at", "source", "licence"]) {
+    if (!dna.meta[field]) missingMeta.push(`meta.${field}`);
+  }
+  if (typeof dna.meta.confidence !== "number") missingMeta.push("meta.confidence");
+
   if (!dna.fingerprint || typeof dna.fingerprint !== "object") {
     throw new Error("DNA is missing fingerprint");
   }
@@ -75,30 +86,75 @@ function normaliseDna(input, { slug, name }) {
   if (!Array.isArray(dna.pages) || dna.pages.length === 0) {
     throw new Error("DNA must contain at least one page recipe");
   }
-  dna.rules ??= {};
-  dna.rules.do ??= [];
-  dna.rules.dont ??= [];
-  dna.rules.max_font_families ??= dna.tokens?.typography?.families?.length ?? 2;
-  dna.rules.accent_budget_per_viewport ??= 5;
-  dna.rules.corner_radius ??= dna.tokens?.radii?.default ?? "0";
-  dna.rules.motion_easing ??=
-    dna.tokens?.motion?.easings?.[Object.keys(dna.tokens?.motion?.easings ?? {})[0]] ?? "ease";
-  dna.rules.hero ??= {
-    preferred_variant:
-      dna.components.find((component) => /hero/i.test(component.component))?.variant ?? "editorial",
-    headline_length: "8-16 words",
-    cta_count: 2,
-  };
-  dna.provenance ??= {
-    source: dna.meta.source,
-    licence: dna.meta.licence,
-    evidence_count: dna.components.reduce((sum, component) => sum + component.evidence.length, 0),
-    notes: "",
-  };
-  dna.provenance.evidence_count ??= dna.components.reduce(
-    (sum, component) => sum + component.evidence.length,
-    0,
-  );
+  if (!dna.rules || typeof dna.rules !== "object") {
+    throw new Error("DNA must contain a rules object");
+  }
+  for (const field of ["do", "dont"]) {
+    if (!Array.isArray(dna.rules[field])) {
+      throw new Error(`rules.${field} must be an array`);
+    }
+  }
+  for (const field of ["max_font_families", "accent_budget_per_viewport"]) {
+    if (!Number.isInteger(dna.rules[field])) {
+      throw new Error(`rules.${field} must be an integer`);
+    }
+  }
+  for (const field of ["corner_radius", "motion_easing"]) {
+    requireText(dna.rules[field], `rules.${field}`);
+  }
+  if (!dna.rules.hero || typeof dna.rules.hero !== "object") {
+    throw new Error("rules.hero is required");
+  }
+  for (const field of ["preferred_variant", "headline_length"]) {
+    requireText(dna.rules.hero[field], `rules.hero.${field}`);
+  }
+  if (!Number.isInteger(dna.rules.hero.cta_count)) {
+    throw new Error("rules.hero.cta_count must be an integer");
+  }
+  if (!dna.accessibility || typeof dna.accessibility !== "object") {
+    if (!allowIncomplete) throw new Error("DNA must contain an accessibility object");
+  }
+
+  if (!dna.provenance || typeof dna.provenance !== "object") {
+    throw new Error("DNA must contain a provenance object");
+  }
+  for (const field of ["source", "licence"]) {
+    if (!dna.provenance[field]) missingMeta.push(`provenance.${field}`);
+  }
+  if (!dna.provenance.status) missingMeta.push("provenance.status");
+  if (missingMeta.length > 0) {
+    if (!allowIncomplete) {
+      throw new Error(`DNA is missing required provenance fields: ${missingMeta.join(", ")}`);
+    }
+    for (const pathName of missingMeta) {
+      const [section, field] = pathName.split(".");
+      if (section === "meta" && field === "confidence") dna.meta.confidence = 0;
+      else if (section === "provenance" && field === "status") dna.provenance.status = "in-progress";
+      else if (section === "meta") dna.meta[field] = `DRAFT - missing ${field}`;
+      else dna.provenance[field] = `DRAFT - missing ${field}`;
+    }
+    dna.provenance.notes = [dna.provenance.notes, "DRAFT: complete provenance before release."]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  const computedEvidence = structuredEvidenceCount(dna);
+  if (
+    Number.isInteger(dna.provenance.evidence_count) &&
+    dna.provenance.evidence_count !== computedEvidence
+  ) {
+    throw new Error(
+      `provenance.evidence_count is ${dna.provenance.evidence_count} but structured citations total ${computedEvidence}`,
+    );
+  }
+  dna.provenance.evidence_count = computedEvidence;
+  if (!Array.isArray(dna.provenance.publication_blockers)) {
+    dna.provenance.publication_blockers = [];
+  }
+  if (dna.provenance.status === "blocked" && dna.provenance.publication_blockers.length === 0) {
+    dna.provenance.publication_blockers.push("Publication blockers must be listed before release.");
+  }
+
   return dna;
 }
 
@@ -414,17 +470,30 @@ ${(dna.rules?.dont ?? []).map((item) => `- ${item}`).join("\n")}
 }
 
 function renderAccessibilityMd(dna) {
-  const foreground = tokenValue(
-    dna.tokens?.colors?.ink ?? dna.tokens?.colors?.night ?? "#000000",
-  );
-  const background = tokenValue(
-    dna.tokens?.colors?.ivory ?? dna.tokens?.colors?.paper ?? "#ffffff",
-  );
+  const firstPair = dna.accessibility?.contrast_pairs?.[0];
+  const colors = Object.values(dna.tokens?.colors ?? {});
+  const foreground =
+    firstPair?.foreground ?? tokenValue(dna.tokens?.colors?.ink ?? dna.tokens?.colors?.night ?? colors[0] ?? "");
+  const background =
+    firstPair?.background ?? tokenValue(dna.tokens?.colors?.ivory ?? dna.tokens?.colors?.paper ?? colors[1] ?? "");
+  const level = dna.accessibility?.wcag_level ?? "AA";
+  const issues = (dna.accessibility?.issues ?? [])
+    .map(
+      (item) =>
+        `- [${item.severity}] \`${item.id}\`: ${item.finding} (${item.status}; evidence: ${item.evidence})`,
+    )
+    .join("\n");
+  const pairs = (dna.accessibility?.contrast_pairs ?? [])
+    .map(
+      (pair) =>
+        `- ${pair.foreground} on ${pair.background} for ${pair.context}: ${pair.ratio}:1 (${pair.level})`,
+    )
+    .join("\n");
   return `# Accessibility - ${dna.meta.name}
 
 ## Requirements
 
-- WCAG 2.2 AA for text, UI components, and focus indicators.
+- WCAG 2.2 ${level} for text, UI components, and focus indicators.
 - Visible focus on every interactive element.
 - Semantic landmarks and logical heading order.
 - Native dialogs or a complete ARIA dialog pattern.
@@ -434,7 +503,11 @@ function renderAccessibilityMd(dna) {
 
 ## Known findings
 
-${(dna.accessibility?.issues ?? []).map((item) => `- ${item}`).join("\n") || "- No findings were recorded in the DNA. Re-check before launch."}
+${issues || "- No findings were recorded in the DNA. Re-check before launch."}
+
+## Contrast pairs
+
+${pairs || "- No contrast pairs were recorded in the DNA. Re-check before launch."}
 
 ## Test commands
 
@@ -528,6 +601,7 @@ function renderProvenanceMd(dna) {
 | DNA version | ${dna.meta.version} |
 | Licence | ${provenance.licence ?? dna.meta.licence} |
 | Evidence count | ${provenance.evidence_count ?? 0} |
+| Release status | ${provenance.status ?? "Not recorded"} |
 
 ${(provenance.parents ?? []).length ? `## Parents\n\n${table(
   ["Role", "Slug", "Name", "Version", "SHA-256"],
@@ -543,6 +617,10 @@ ${(provenance.parents ?? []).length ? `## Parents\n\n${table(
 ## Restrictions
 
 ${(provenance.restrictions ?? []).map((item) => `- ${item}`).join("\n") || "- No assets are included. Do not copy source code, photography, logos, or copy."}
+
+## Publication blockers
+
+${(provenance.publication_blockers ?? []).map((item) => `- ${item}`).join("\n") || "- None recorded."}
 
 ## Limits
 
@@ -611,13 +689,21 @@ function renderComponentSpecTemplate() {
 `;
 }
 
-export async function scaffoldSkill({ dna: input, slug, name, out, force = false, validate = true }) {
+export async function scaffoldSkill({
+  dna: input,
+  slug,
+  name,
+  out,
+  force = false,
+  validate = true,
+  allowIncomplete = false,
+}) {
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     throw new Error("slug must use lowercase letters, numbers, and hyphens");
   }
   if (!name || name.trim().length === 0) throw new Error("name is required");
   if (!out) throw new Error("out is required");
-  const dna = normaliseDna(input, { slug, name });
+  const dna = normaliseDna(input, { slug, name, allowIncomplete });
   const outDir = path.resolve(out);
 
   let entries = [];
@@ -677,14 +763,14 @@ export async function scaffoldSkill({ dna: input, slug, name, out, force = false
   await writeFile(path.join(outDir, "templates/page-brief.md"), renderPageBriefTemplate(), "utf8");
   await writeFile(path.join(outDir, "templates/component-spec.md"), renderComponentSpecTemplate(), "utf8");
 
-  if (validate) {
+  if (validate && !allowIncomplete) {
     const result = await validateSkillDir(outDir);
     if (!result.ok) {
       throw new Error(`Generated skill failed validation:\n${result.errors.join("\n")}`);
     }
   }
 
-  return { outDir, dna };
+  return { outDir, dna, draft: allowIncomplete };
 }
 
 function parseArgs(argv) {
@@ -697,6 +783,7 @@ function parseArgs(argv) {
     else if (arg === "--out") options.out = argv[++index];
     else if (arg === "--force") options.force = true;
     else if (arg === "--no-validate") options.noValidate = true;
+    else if (arg === "--allow-incomplete") options.allowIncomplete = true;
     else if (arg === "--help" || arg === "-h") options.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -706,7 +793,7 @@ function parseArgs(argv) {
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help || !options.slug || !options.name || !options.dna || !options.out) {
-    console.log(`Usage: node scripts/scaffold-dna-skill.mjs --slug <slug> --name "<Name>" --dna <design-dna.json> --out <skill-dir> [--force] [--no-validate]`);
+    console.log(`Usage: node scripts/scaffold-dna-skill.mjs --slug <slug> --name "<Name>" --dna <design-dna.json> --out <skill-dir> [--force] [--no-validate] [--allow-incomplete]`);
     if (!options.help) process.exitCode = 1;
     return;
   }
@@ -718,8 +805,12 @@ async function main() {
     out: options.out,
     force: Boolean(options.force),
     validate: !options.noValidate,
+    allowIncomplete: Boolean(options.allowIncomplete),
   });
   console.log(`Generated ${result.outDir}`);
+  if (result.draft) {
+    console.warn("DRAFT: generated with --allow-incomplete. Complete provenance before release.");
+  }
 }
 
 const isMain = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;

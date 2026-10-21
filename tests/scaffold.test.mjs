@@ -8,7 +8,7 @@ import { scaffoldSkill } from "../scripts/scaffold-dna-skill.mjs";
 import { validateSkillDir } from "../scripts/validate-dna-skill.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const DNA_PATH = path.resolve(HERE, "..", "templates", "design-dna.json");
+const DNA_PATH = path.resolve(HERE, "..", "examples", "african-bison", "design-dna.json");
 
 async function loadDna() {
   return JSON.parse(await readFile(DNA_PATH, "utf8"));
@@ -54,6 +54,13 @@ test("scaffolds a complete, valid design-DNA skill", async () => {
     assert.ok(css.includes("--color-clay: #b4552d;"));
     assert.ok(css.includes("--font-display"));
     assert.ok(css.includes("prefers-reduced-motion"));
+    const accessibility = await readFile(path.join(out, "references/accessibility.md"), "utf8");
+    assert.ok(accessibility.includes("inactive-tab-contrast"));
+    assert.ok(accessibility.includes("hover-only-excerpts"));
+    assert.ok(!accessibility.includes("[object Object]"));
+    const provenance = await readFile(path.join(out, "references/provenance.md"), "utf8");
+    assert.ok(provenance.includes("blocked"));
+    assert.ok(provenance.includes("Image credits and licences are unresolved"));
     const validation = await validateSkillDir(out);
     assert.deepEqual(validation.errors, []);
     assert.equal(validation.ok, true);
@@ -79,6 +86,20 @@ test("refuses a non-empty directory unless forced, then regenerates cleanly", as
     });
     assert.ok(result.outDir);
     await assert.rejects(stat(path.join(out, "keep.txt")), /ENOENT/);
+  } finally {
+    await rm(out, { recursive: true, force: true });
+  }
+});
+
+test("rejects an evidence count that does not match the citations", async () => {
+  const out = await tempDir("dna-scaffold-evidence-");
+  try {
+    const dna = await loadDna();
+    dna.provenance.evidence_count = 999;
+    await assert.rejects(
+      scaffoldSkill({ dna, slug: "african-bison", name: "African Bison", out }),
+      /structured citations total/,
+    );
   } finally {
     await rm(out, { recursive: true, force: true });
   }

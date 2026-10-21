@@ -60,7 +60,7 @@ This is the source of truth. Required top-level fields:
 | `pages` | supported page types and section order |
 | `rules` | do, don't, limits, hero rules |
 | `scores` | 100-point scorecard |
-| `provenance` | source, licence, restrictions, evidence count |
+| `provenance` | source, licence, restrictions, evidence count, status, publication blockers |
 
 ## ai-rules.json
 
@@ -126,7 +126,7 @@ Each generated reference should be specific to the client:
 | `accessibility.md` | Strengths, issues, test commands |
 | `page-recipes.md` | Page types and section order |
 | `decision-rules.md` | Fingerprint, selection rules, fallbacks |
-| `provenance.md` | Source, licence, limitations |
+| `provenance.md` | Source, licence, limitations, release status, blockers |
 
 ## Templates
 

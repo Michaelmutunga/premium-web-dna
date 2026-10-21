@@ -18,52 +18,123 @@
     "rules"
   ],
   "properties": {
-    "schema_version": { "type": "string" },
-    "framework": { "type": "string", "const": "DNA Audit Framework v1" },
-    "framework_version": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "framework": {
+      "type": "string",
+      "const": "DNA Audit Framework v1"
+    },
+    "framework_version": {
+      "type": "string"
+    },
     "source": {
       "type": "object",
-      "required": ["name", "slug", "version"],
+      "required": [
+        "name",
+        "slug",
+        "version"
+      ],
       "properties": {
-        "name": { "type": "string" },
-        "slug": { "type": "string" },
-        "version": { "type": "string" }
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
       }
     },
-    "archetype": { "type": "string" },
-    "fingerprint": { "type": "object" },
+    "archetype": {
+      "type": "string"
+    },
+    "fingerprint": {
+      "type": "object"
+    },
     "global": {
       "type": "object",
-      "required": ["max_font_families", "accent_budget_per_viewport", "corner_radius", "motion_easing", "forbidden"],
+      "required": [
+        "max_font_families",
+        "accent_budget_per_viewport",
+        "corner_radius",
+        "motion_easing",
+        "forbidden"
+      ],
       "properties": {
-        "max_font_families": { "type": "integer", "minimum": 1 },
-        "accent_budget_per_viewport": { "type": "integer", "minimum": 0 },
-        "corner_radius": { "type": "string" },
-        "motion_easing": { "type": "string" },
-        "forbidden": { "type": "array", "items": { "type": "string" } }
+        "max_font_families": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "accent_budget_per_viewport": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "corner_radius": {
+          "type": "string"
+        },
+        "motion_easing": {
+          "type": "string"
+        },
+        "forbidden": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
-    "tokens": { "type": "object" },
+    "tokens": {
+      "type": "object"
+    },
     "hero": {
       "type": "object",
-      "required": ["preferred_variant", "headline_length", "cta_count"],
+      "required": [
+        "preferred_variant",
+        "headline_length",
+        "cta_count"
+      ],
       "properties": {
-        "preferred_variant": { "type": "string" },
-        "headline_length": { "type": "string" },
-        "cta_count": { "type": "integer", "minimum": 0 }
+        "preferred_variant": {
+          "type": "string"
+        },
+        "headline_length": {
+          "type": "string"
+        },
+        "cta_count": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "components": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "component", "variant", "confidence"]
+        "required": [
+          "id",
+          "component",
+          "variant",
+          "confidence"
+        ]
       }
     },
-    "pages": { "type": "array", "items": { "type": "object" } },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
     "rules": {
       "type": "object",
-      "required": ["do", "dont"]
+      "required": [
+        "do",
+        "dont"
+      ]
     }
   }
 }

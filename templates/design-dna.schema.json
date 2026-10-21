@@ -15,10 +15,12 @@
     "components",
     "pages",
     "rules",
+    "accessibility",
     "scores",
     "provenance"
   ],
   "properties": {
+    "$schema": { "type": "string" },
     "schema_version": { "type": "string" },
     "framework": { "type": "string", "const": "DNA Audit Framework v1" },
     "framework_version": { "type": "string" },
@@ -28,13 +30,13 @@
       "properties": {
         "name": { "type": "string", "minLength": 1 },
         "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-        "version": { "type": "string" },
-        "audited_at": { "type": "string" },
-        "source": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "audited_at": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
         "source_commit": { "type": "string" },
         "auditor": { "type": "string" },
         "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "licence": { "type": "string" },
+        "licence": { "type": "string", "minLength": 1 },
         "restrictions": { "type": "array", "items": { "type": "string" } }
       }
     },
@@ -42,19 +44,19 @@
       "type": "object",
       "required": ["primary", "confidence", "evidence"],
       "properties": {
-        "primary": { "type": "string" },
-        "secondary": { "type": "string" },
-        "tertiary": { "type": "string" },
+        "primary": { "enum": ["Luxury", "Explorer", "Authority", "Craftsmanship", "Technology", "Innovation", "Industrial", "Institutional", "Hospitality", "Community", "Minimal", "Editorial"] },
+        "secondary": { "enum": ["Luxury", "Explorer", "Authority", "Craftsmanship", "Technology", "Innovation", "Industrial", "Institutional", "Hospitality", "Community", "Minimal", "Editorial"] },
+        "tertiary": { "enum": ["Luxury", "Explorer", "Authority", "Craftsmanship", "Technology", "Innovation", "Industrial", "Institutional", "Hospitality", "Community", "Minimal", "Editorial"] },
         "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
         "scores": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0, "maximum": 5 } },
-        "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 }
       }
     },
     "fingerprint": {
       "type": "object",
       "required": ["archetype", "density", "contrast", "motion_style", "cta_style", "card_style", "navbar_style"],
       "properties": {
-        "archetype": { "type": "string" },
+        "archetype": { "type": "string", "minLength": 1 },
         "density": { "enum": ["compact", "balanced", "spacious", "editorial"] },
         "contrast": { "enum": ["low", "medium", "high", "extreme"] },
         "motion_style": { "enum": ["static", "subtle", "smooth", "cinematic", "expressive"] },
@@ -63,8 +65,49 @@
         "navbar_style": { "enum": ["solid", "transparent", "transparent-blur", "minimal", "masthead"] }
       }
     },
-    "tokens": { "type": "object" },
-    "surfaces": { "type": "array", "items": { "type": "object" } },
+    "tokens": {
+      "type": "object",
+      "required": ["colors", "typography", "spacing", "radii", "motion", "breakpoints"],
+      "properties": {
+        "colors": { "type": "object" },
+        "typography": {
+          "type": "object",
+          "required": ["families", "scale"],
+          "properties": {
+            "families": { "type": "array", "minItems": 1 },
+            "scale": { "type": "array" }
+          }
+        },
+        "spacing": { "type": "object", "required": ["base"] },
+        "radii": { "type": "object" },
+        "borders": { "type": "object" },
+        "shadows": { "type": "object" },
+        "motion": {
+          "type": "object",
+          "required": ["easings", "durations"],
+          "properties": {
+            "easings": { "type": "object" },
+            "durations": { "type": "object" }
+          }
+        },
+        "breakpoints": { "type": "object" },
+        "z_index": { "type": "object" }
+      }
+    },
+    "surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "token", "text_token", "role"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "token": { "type": "string", "minLength": 1 },
+          "text_token": { "type": "string", "minLength": 1 },
+          "role": { "type": "string" }
+        }
+      }
+    },
     "components": {
       "type": "array",
       "minItems": 1,
@@ -72,11 +115,11 @@
         "type": "object",
         "required": ["id", "component", "variant", "confidence", "evidence"],
         "properties": {
-          "id": { "type": "string" },
-          "component": { "type": "string" },
-          "variant": { "type": "string" },
+          "id": { "type": "string", "minLength": 1 },
+          "component": { "type": "string", "minLength": 1 },
+          "variant": { "type": "string", "minLength": 1 },
           "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-          "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
           "anatomy": { "type": "array", "items": { "type": "string" } },
           "states": { "type": "array", "items": { "type": "string" } },
           "responsive": { "type": "string" },
@@ -86,10 +129,22 @@
         }
       }
     },
-    "pages": { "type": "array", "items": { "type": "object" } },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "sections"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "sections": { "type": "array", "items": { "type": "string" } },
+          "rules": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
     "rules": {
       "type": "object",
-      "required": ["do", "dont"],
+      "required": ["do", "dont", "max_font_families", "accent_budget_per_viewport", "corner_radius", "motion_easing", "hero"],
       "properties": {
         "do": { "type": "array", "items": { "type": "string" } },
         "dont": { "type": "array", "items": { "type": "string" } },
@@ -97,7 +152,51 @@
         "accent_budget_per_viewport": { "type": "integer", "minimum": 0 },
         "corner_radius": { "type": "string" },
         "motion_easing": { "type": "string" },
-        "hero": { "type": "object" }
+        "hero": {
+          "type": "object",
+          "required": ["preferred_variant", "headline_length", "cta_count"],
+          "properties": {
+            "preferred_variant": { "type": "string", "minLength": 1 },
+            "headline_length": { "type": "string", "minLength": 1 },
+            "cta_count": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "required": ["wcag_level", "issues", "contrast_pairs"],
+      "properties": {
+        "wcag_level": { "enum": ["A", "AA", "AAA"] },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "severity", "category", "finding", "evidence", "status"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "severity": { "enum": ["P0", "P1", "P2", "P3"] },
+              "category": { "type": "string", "minLength": 1 },
+              "finding": { "type": "string", "minLength": 1 },
+              "evidence": { "type": "string", "minLength": 1 },
+              "status": { "enum": ["open", "resolved", "accepted"] }
+            }
+          }
+        },
+        "contrast_pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["foreground", "background", "context", "ratio", "level"],
+            "properties": {
+              "foreground": { "type": "string", "minLength": 1 },
+              "background": { "type": "string", "minLength": 1 },
+              "context": { "type": "string", "minLength": 1 },
+              "ratio": { "type": "number", "minimum": 1, "maximum": 21 },
+              "level": { "enum": ["AA", "AAA", "fail"] }
+            }
+          }
+        }
       }
     },
     "scores": {
@@ -110,12 +209,13 @@
         "band": { "enum": ["Exceptional", "Premium", "Professional", "Functional", "Weak"] },
         "categories": {
           "type": "object",
+          "required": ["visual_system", "ux_architecture", "typography", "spacing", "brand_distinction", "trust_signals", "motion", "accessibility", "performance", "content_quality"],
           "additionalProperties": {
             "type": "object",
             "required": ["max", "score"],
             "properties": {
-              "max": { "type": "integer" },
-              "score": { "type": "integer" },
+              "max": { "type": "integer", "minimum": 1, "maximum": 100 },
+              "score": { "type": "integer", "minimum": 0, "maximum": 100 },
               "note": { "type": "string" }
             }
           }
@@ -124,15 +224,17 @@
     },
     "provenance": {
       "type": "object",
-      "required": ["source", "licence", "evidence_count"],
+      "required": ["source", "licence", "evidence_count", "status"],
       "properties": {
-        "source": { "type": "string" },
+        "source": { "type": "string", "minLength": 1 },
         "source_commit": { "type": "string" },
         "audit_date": { "type": "string" },
         "auditor": { "type": "string" },
-        "licence": { "type": "string" },
+        "licence": { "type": "string", "minLength": 1 },
         "restrictions": { "type": "array", "items": { "type": "string" } },
         "evidence_count": { "type": "integer", "minimum": 0 },
+        "status": { "enum": ["queued", "in-progress", "audit-complete", "released", "blocked", "superseded"] },
+        "publication_blockers": { "type": "array", "items": { "type": "string" } },
         "notes": { "type": "string" }
       }
     }

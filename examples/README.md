@@ -2,12 +2,14 @@
 
 The examples directory is the library of completed and queued design-DNA extractions.
 
-| Client | Status | Archetype | Score | Fingerprint |
-|---|---|---|---|---|
-| [African Bison Classic Tours](./african-bison/) | Complete | Explorer / Luxury / Hospitality | 88 | `Explorer-Luxury` |
-| [Queensland Nuts](./queensland-nuts/) | Queued | - | - | - |
-| [Muta Automations](./muta-automations/) | Queued | - | - | - |
-| [TCDL](./tcdl/) | Queued | - | - | - |
+| Client | Status | Release | Archetype | Score | Fingerprint |
+|---|---|---|---|---|---|
+| [African Bison Classic Tours](./african-bison/) | Audit complete | Blocked: 2 open P0s | Explorer / Luxury / Hospitality | 88 | `Explorer-Luxury` |
+| [Queensland Nuts](./queensland-nuts/) | Queued | - | - | - | - |
+| [Muta Automations](./muta-automations/) | Queued | - | - | - | - |
+| [TCDL](./tcdl/) | Queued | - | - | - | - |
+
+`Audit complete` means the audit and DNA are finished. `Release` means the generated skill may be published. A client is not released while any P0 finding is open.
 
 Queued folders contain no invented DNA. They are placeholders until an authorised extraction runs.
 

@@ -26,7 +26,7 @@ function firstEasing(motion) {
     if (typeof first === "string") return first;
     if (first?.value) return first.value;
   }
-  return "ease";
+  return undefined;
 }
 
 function normaliseFingerprint(value) {
@@ -42,110 +42,178 @@ function normaliseFingerprint(value) {
 }
 
 function normaliseColors(colors = {}) {
-  if (!colors || typeof colors !== "object" || Array.isArray(colors)) return {};
+  if (!colors || typeof colors !== "object" || Array.isArray(colors)) {
+    throw new Error("tokens.colors must be an object");
+  }
   return Object.fromEntries(
     Object.entries(colors).map(([name, value]) => {
       if (typeof value === "string") return [name, { value }];
       if (value && typeof value === "object") {
+        const tokenValue = value.value ?? value.hex;
+        if (typeof tokenValue !== "string" || tokenValue.length === 0) {
+          throw new Error(`tokens.colors.${name} must have a value`);
+        }
         return [
           name,
           {
-            value: value.value ?? value.hex ?? "",
+            value: tokenValue,
             ...(value.role ? { role: value.role } : {}),
           },
         ];
       }
-      return [name, { value: String(value) }];
+      throw new Error(`tokens.colors.${name} must be a string or object`);
     }),
   );
 }
 
-function normaliseTypography(typography = {}) {
-  const families = Array.isArray(typography.families) ? typography.families : [];
-  const scale = Array.isArray(typography.scale) ? typography.scale : [];
+function normaliseTypography(typography) {
+  if (!typography || typeof typography !== "object" || Array.isArray(typography)) {
+    throw new Error("tokens.typography must be an object");
+  }
+  const families = typography.families;
+  const scale = typography.scale;
+  if (!Array.isArray(families) || families.length === 0) {
+    throw new Error("tokens.typography.families must contain at least one family");
+  }
+  if (!Array.isArray(scale)) throw new Error("tokens.typography.scale must be an array");
   return {
-    families: families.map((family) => ({
-      name: family.name ?? family.family ?? "Unknown",
-      ...(family.variable ? { variable: family.variable } : {}),
-      ...(family.role ? { role: family.role } : {}),
-    })),
-    scale: scale.map((step) => ({
-      name: step.name ?? step.utility ?? "unnamed",
-      ...(step.size ? { size: step.size } : {}),
-      ...(step.line_height ? { line_height: step.line_height } : {}),
-      ...(step.tracking ? { tracking: step.tracking } : {}),
-      ...(step.weight ? { weight: step.weight } : {}),
-      ...(step.use ? { use: step.use } : {}),
-    })),
+    families: families.map((family, index) => {
+      const name = family?.name ?? family?.family;
+      if (typeof name !== "string" || name.length === 0) {
+        throw new Error(`tokens.typography.families[${index}] must have a name`);
+      }
+      return {
+        name,
+        ...(family.variable ? { variable: family.variable } : {}),
+        ...(family.role ? { role: family.role } : {}),
+      };
+    }),
+    scale: scale.map((step, index) => {
+      const name = step?.name ?? step?.utility;
+      if (typeof name !== "string" || name.length === 0) {
+        throw new Error(`tokens.typography.scale[${index}] must have a name`);
+      }
+      return {
+        name,
+        ...(step.size ? { size: step.size } : {}),
+        ...(step.line_height ? { line_height: step.line_height } : {}),
+        ...(step.tracking ? { tracking: step.tracking } : {}),
+        ...(step.weight ? { weight: step.weight } : {}),
+        ...(step.use ? { use: step.use } : {}),
+      };
+    }),
   };
 }
 
 function deriveHero(dna) {
   if (dna.rules?.hero) return dna.rules.hero;
   const hero = (dna.components ?? []).find((component) => /hero/i.test(component.component ?? ""));
-  return {
-    preferred_variant: hero?.variant ?? "editorial",
-    headline_length: "8-16 words",
-    cta_count: 2,
-  };
+  if (!hero) {
+    throw new Error("design-dna.json rules.hero is required; do not invent hero rules");
+  }
+  throw new Error(
+    `design-dna.json rules.hero is required (found hero component "${hero.id}"); record headline length and CTA count from evidence`,
+  );
 }
 
 export function buildAiLayer(dna) {
   if (!dna || typeof dna !== "object") throw new Error("DNA must be an object");
-  if (!dna.meta?.name || !dna.meta?.slug) throw new Error("DNA meta.name and meta.slug are required");
+  if (!dna.meta?.name || !dna.meta?.slug || !dna.meta?.version) {
+    throw new Error("DNA meta.name, meta.slug, and meta.version are required");
+  }
+  if (dna.framework !== "DNA Audit Framework v1") {
+    throw new Error("design-dna.json framework must be DNA Audit Framework v1");
+  }
+  if (typeof dna.framework_version !== "string" || dna.framework_version.length === 0) {
+    throw new Error("design-dna.json framework_version is required");
+  }
   const fingerprint = normaliseFingerprint(dna.fingerprint);
-  const rules = dna.rules ?? {};
-  const tokens = dna.tokens ?? {};
-  const maxFamilies =
-    Number.isInteger(rules.max_font_families) && rules.max_font_families > 0
-      ? rules.max_font_families
-      : Math.max(1, tokens.typography?.families?.length ?? 2);
+  const rules = dna.rules;
+  const tokens = dna.tokens;
+  if (!rules || typeof rules !== "object") {
+    throw new Error("design-dna.json rules object is required");
+  }
+  if (!tokens || typeof tokens !== "object") {
+    throw new Error("design-dna.json tokens object is required");
+  }
+  if (!Array.isArray(rules.do) || !Array.isArray(rules.dont)) {
+    throw new Error("design-dna.json rules.do and rules.dont must be arrays");
+  }
+  if (!Array.isArray(dna.components) || dna.components.length === 0) {
+    throw new Error("design-dna.json components must contain at least one component");
+  }
+  if (!Array.isArray(dna.pages) || dna.pages.length === 0) {
+    throw new Error("design-dna.json pages must contain at least one page");
+  }
+  if (!Number.isInteger(rules.max_font_families) || rules.max_font_families < 1) {
+    throw new Error("design-dna.json rules.max_font_families must be a positive integer");
+  }
+  if (!Number.isInteger(rules.accent_budget_per_viewport) || rules.accent_budget_per_viewport < 0) {
+    throw new Error("design-dna.json rules.accent_budget_per_viewport must be a non-negative integer");
+  }
+  if (typeof rules.corner_radius !== "string" || rules.corner_radius.length === 0) {
+    throw new Error("design-dna.json rules.corner_radius is required");
+  }
+  const motionEasing = rules.motion_easing ?? firstEasing(tokens.motion);
+  if (typeof motionEasing !== "string" || motionEasing.length === 0) {
+    throw new Error("design-dna.json rules.motion_easing is required");
+  }
+
+  for (const field of ["colors", "typography", "spacing", "radii", "motion"]) {
+    if (!tokens[field] || typeof tokens[field] !== "object" || Array.isArray(tokens[field])) {
+      throw new Error(`design-dna.json tokens.${field} must be an object`);
+    }
+  }
 
   return {
     schema_version: "1.0",
-    framework: dna.framework ?? "DNA Audit Framework v1",
-    framework_version: dna.framework_version ?? "1.0.0",
+    framework: dna.framework,
+    framework_version: dna.framework_version,
     source: {
       name: dna.meta.name,
       slug: dna.meta.slug,
-      version: dna.meta.version ?? "1.0.0",
+      version: dna.meta.version,
     },
     archetype: fingerprint.archetype,
     fingerprint,
     global: {
-      max_font_families: maxFamilies,
-      accent_budget_per_viewport:
-        Number.isInteger(rules.accent_budget_per_viewport) && rules.accent_budget_per_viewport >= 0
-          ? rules.accent_budget_per_viewport
-          : 5,
-      corner_radius: rules.corner_radius ?? tokens.radii?.default ?? "0",
-      motion_easing: rules.motion_easing ?? firstEasing(tokens.motion),
-      forbidden: Array.isArray(rules.dont) ? [...rules.dont] : [],
+      max_font_families: rules.max_font_families,
+      accent_budget_per_viewport: rules.accent_budget_per_viewport,
+      corner_radius: rules.corner_radius,
+      motion_easing: motionEasing,
+      forbidden: [...rules.dont],
     },
     tokens: {
       colors: normaliseColors(tokens.colors),
       typography: normaliseTypography(tokens.typography),
-      spacing: tokens.spacing ?? {},
-      radii: tokens.radii ?? {},
-      borders: tokens.borders ?? {},
-      motion: tokens.motion ?? {},
+      spacing: tokens.spacing,
+      radii: tokens.radii,
+      ...(tokens.borders ? { borders: tokens.borders } : {}),
+      motion: tokens.motion,
     },
     hero: deriveHero(dna),
-    components: (dna.components ?? []).map((component) => ({
+    components: dna.components.map((component) => ({
       id: component.id,
       component: component.component,
       variant: component.variant,
       confidence: component.confidence,
     })),
-    pages: dna.pages ?? [],
+    pages: dna.pages,
     rules: {
-      do: Array.isArray(rules.do) ? [...rules.do] : [],
-      dont: Array.isArray(rules.dont) ? [...rules.dont] : [],
+      do: [...rules.do],
+      dont: [...rules.dont],
     },
   };
 }
 
 export function buildFingerprints(dna) {
+  if (!dna || typeof dna !== "object") throw new Error("DNA must be an object");
+  if (dna.framework !== "DNA Audit Framework v1") {
+    throw new Error("design-dna.json framework must be DNA Audit Framework v1");
+  }
+  if (typeof dna.framework_version !== "string" || dna.framework_version.length === 0) {
+    throw new Error("design-dna.json framework_version is required");
+  }
   const fingerprint = normaliseFingerprint(dna.fingerprint);
   const map = { [fingerprint.archetype]: fingerprint };
 
@@ -158,8 +226,8 @@ export function buildFingerprints(dna) {
 
   return {
     schema_version: "1.0",
-    framework: dna.framework ?? "DNA Audit Framework v1",
-    framework_version: dna.framework_version ?? "1.0.0",
+    framework: dna.framework,
+    framework_version: dna.framework_version,
     default: fingerprint.archetype,
     fingerprints: map,
   };

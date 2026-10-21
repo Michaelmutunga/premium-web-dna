@@ -1,4 +1,5 @@
 {
+  "$schema": "https://premium-web-dna.local/schemas/design-dna.schema.json",
   "schema_version": "1.0",
   "framework": "DNA Audit Framework v1",
   "framework_version": "1.0.0",
@@ -699,6 +700,72 @@
       "cta_count": 2
     }
   },
+  "accessibility": {
+    "wcag_level": "AA",
+  "issues": [
+    {
+      "id": "inactive-tab-contrast",
+        "severity": "P1",
+        "category": "contrast",
+        "finding": "Inactive tab text at ink/55 on ivory is 4.06:1 at 12px, below WCAG AA normal text.",
+        "evidence": "Extension E, Accessibility issues found, item 1",
+        "status": "open"
+      },
+      {
+        "id": "hover-only-excerpts",
+        "severity": "P1",
+        "category": "interaction",
+        "finding": "Destination and experience excerpts appear only on hover or focus-within, so touch users may not see them.",
+        "evidence": "Extension E, Accessibility issues found, item 4",
+        "status": "open"
+      },
+      {
+        "id": "footer-placeholder",
+        "severity": "P1",
+        "category": "content",
+        "finding": "The footer contains a public placeholder line about configurable contact details.",
+        "evidence": "Extension G, P0 item 4",
+        "status": "open"
+      }
+    ],
+    "contrast_pairs": [
+      {
+        "foreground": "#14120f",
+        "background": "#faf7f1",
+        "context": "Body text on ivory",
+        "ratio": 17.49,
+        "level": "AAA"
+      },
+      {
+        "foreground": "#faf7f1",
+        "background": "#0e0d0b",
+        "context": "Body text on night",
+        "ratio": 18.17,
+        "level": "AAA"
+      },
+      {
+        "foreground": "#b4552d",
+        "background": "#faf7f1",
+        "context": "Accent text on ivory",
+        "ratio": 4.59,
+        "level": "AA"
+      },
+      {
+        "foreground": "#b4552d",
+        "background": "#0e0d0b",
+        "context": "Accent text on night; prohibited for normal text",
+        "ratio": 3.96,
+        "level": "fail"
+      },
+      {
+        "foreground": "ink at 55%",
+        "background": "#faf7f1",
+        "context": "Inactive tab text on ivory",
+        "ratio": 4.06,
+        "level": "fail"
+      }
+    ]
+  },
   "scores": {
     "framework": "DNA Audit Framework v1",
     "framework_version": "1.0.0",
@@ -767,7 +834,12 @@
       "No source code or client photography may be redistributed.",
       "Image credits and licences must be resolved before publication."
     ],
-    "evidence_count": 31,
+    "evidence_count": 30,
+    "status": "blocked",
+    "publication_blockers": [
+      "Image credits and licences are unresolved (P0).",
+      "The hero video exceeds the performance budget (P0)."
+    ],
     "notes": "Example DNA used as the worked reference for the framework. Replace values for a real client."
   }
 }

@@ -16,6 +16,7 @@ npm run scan -- <repo> --out examples/<client-slug>/signals.json
 node scripts/contrast.mjs --pairs examples/<client-slug>/contrast-pairs.json
 node scripts/scaffold-dna-skill.mjs --slug <client-slug> --name "<Client Name>" --dna examples/<client-slug>/design-dna.json --out generated/<client-slug>-design-dna
 node scripts/validate-dna-skill.mjs generated/<client-slug>-design-dna
+npm run check
 ```
 
-Replace every example value with evidence-backed values. Delete keys that start with an underscore. Do not add data that is not supported by a citation.
+Replace every example value with evidence-backed values. Delete keys that start with an underscore. Do not add data that is not supported by a citation. Set `provenance.status` to `audit-complete` or `blocked`, and list every open P0 in `publication_blockers`.

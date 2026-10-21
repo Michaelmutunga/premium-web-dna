@@ -8,7 +8,7 @@ import { scaffoldSkill } from "../scripts/scaffold-dna-skill.mjs";
 import { validateSkillDir } from "../scripts/validate-dna-skill.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const DNA_PATH = path.resolve(HERE, "..", "templates", "design-dna.json");
+const DNA_PATH = path.resolve(HERE, "..", "examples", "african-bison", "design-dna.json");
 
 async function makeSkill(prefix) {
   const out = await mkdtemp(path.join(os.tmpdir(), prefix));

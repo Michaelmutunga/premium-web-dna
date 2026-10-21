@@ -74,7 +74,7 @@ Do not use it to clone an existing page or to invent facts about the client.
 | `references/accessibility.md` | WCAG and quality gates |
 | `references/page-recipes.md` | Page types and section order |
 | `references/decision-rules.md` | Selection and conflict rules |
-| `references/provenance.md` | Source, licence, limits |
+| `references/provenance.md` | Source, licence, limits, release status, blockers |
 
 ## Validation
 

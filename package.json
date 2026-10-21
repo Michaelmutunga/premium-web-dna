@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Global Skill Creator for premium web design DNA: audit, score, fingerprint, generate, and merge reusable design-intelligence skills.",
+  "license": "MIT",
   "scripts": {
     "scan": "node scripts/scan-design-signals.mjs",
     "contrast": "node scripts/contrast.mjs",
@@ -12,9 +13,16 @@
     "merge": "node scripts/merge-dna.mjs",
     "validate": "node scripts/validate-dna-skill.mjs",
     "capture": "node scripts/capture-site.mjs",
-    "test": "node --test \"tests/*.test.mjs\""
+    "verify": "node scripts/verify-repo.mjs",
+    "lint": "biome check scripts tests",
+    "test": "node --test",
+    "check": "npm run lint && npm test && npm run verify"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "ajv": "^8.20.0"
   }
 }

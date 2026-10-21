@@ -1,48 +1,26 @@
 /*
  * {{DISPLAY_NAME}} design tokens
- * Generated from design-dna.json. Do not add values by hand.
+ * Generated from design-dna.json by scripts/scaffold-dna-skill.mjs.
+ * This template shows the contract only. Do not add values by hand.
  */
 
 :root {
   /* Colour */
-  --color-ink: #14120f;
-  --color-ivory: #faf7f1;
-  --color-sand: #e4d9c4;
-  --color-earth-deep: #3d4436;
-  --color-bark-deep: #3a2a1c;
-  --color-night: #0e0d0b;
-  --color-clay: #b4552d;
-  --color-clay-deep: #8c3f20;
+  --color-{{TOKEN_NAME}}: {{COLOUR}};
 
   /* Typography */
-  --font-display: "Fraunces", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-{{FAMILY_ROLE}}: "{{FONT_FAMILY}}", {{FALLBACK_FAMILY}};
 
   /* Spacing */
-  --space-base: 4px;
-  --space-section: 56px;
-  --space-feature: 80px;
+  --space-base: {{BASE}};
+  --space-step-{{N}}: {{STEP}};
 
   /* Shape */
-  --radius-default: 2px;
-  --radius-badge: 9999px;
+  --radius-{{TOKEN_NAME}}: {{RADIUS}};
 
   /* Motion */
-  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-quick: 0.35s;
-  --duration-base: 0.7s;
-  --duration-slow: 1.1s;
-}
-
-/* Media-only scrim. Never use as a decorative background. */
-:root {
-  --scrim: linear-gradient(
-    to bottom,
-    rgb(14 13 11 / 0.55),
-    rgb(14 13 11 / 0.15) 40%,
-    rgb(14 13 11 / 0.15) 60%,
-    rgb(14 13 11 / 0.65)
-  );
+  --ease-{{TOKEN_NAME}}: {{EASING}};
+  --duration-{{TOKEN_NAME}}: {{DURATION}};
 }
 
 @media (prefers-reduced-motion: reduce) {

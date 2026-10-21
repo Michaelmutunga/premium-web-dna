@@ -4,7 +4,7 @@ The worked reference for DNA Audit Framework v1.
 
 | Field | Value |
 |---|---|
-| Status | Complete |
+| Status | Audit complete; release blocked by 2 open P0 findings |
 | Source | `Michaelmutunga/African-Bison-Classic-Tours-` |
 | Branch audited | `redesign/cinematic-ui` |
 | Audit date | 2026-10-19 |
@@ -19,6 +19,13 @@ The worked reference for DNA Audit Framework v1.
 |---|---|
 | `DESIGN-DNA-AUDIT.md` | The evidence-backed audit narrative |
 | `design-dna.json` | The structured source of truth |
+
+## Release blockers
+
+| ID | Severity | Finding |
+|---|---|---|
+| `image-licences` | P0 | Image credits and licences are unresolved. |
+| `hero-video-weight` | P0 | The 9.2 MB hero video exceeds the 5 MB performance budget. |
 
 ## Why it scores 88
 

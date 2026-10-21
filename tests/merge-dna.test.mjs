@@ -4,9 +4,13 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeDna } from "../scripts/merge-dna.mjs";
+import { structuredEvidenceCount } from "../scripts/lib/dna-metrics.mjs";
+import { validateAgainstSchema } from "../scripts/lib/json-schema.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const DNA_PATH = path.resolve(HERE, "..", "templates", "design-dna.json");
+const ROOT = path.resolve(HERE, "..");
+const DNA_PATH = path.join(ROOT, "examples", "african-bison", "design-dna.json");
+const SCHEMA_PATH = path.join(ROOT, "templates", "design-dna.schema.json");
 
 async function loadBase() {
   return JSON.parse(await readFile(DNA_PATH, "utf8"));
@@ -146,4 +150,34 @@ test("rejects an unknown mode", async () => {
   const base = await loadBase();
   const other = makeOther(base);
   assert.throws(() => mergeDna(base, other, { mode: "replace" }), /mode must be one of/);
+});
+
+test("rejects inputs without accessibility evidence", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  delete other.accessibility;
+  assert.throws(() => mergeDna(base, other, { mode: "blend" }), /accessibility\.wcag_level/);
+});
+
+test("merged output carries accessibility, status, and a matching evidence count", async () => {
+  const base = await loadBase();
+  const other = makeOther(base);
+  other.accessibility.issues.find((issue) => issue.id === "inactive-tab-contrast").status = "resolved";
+  const merged = mergeDna(base, other, { mode: "blend" });
+  assert.equal(merged.accessibility.wcag_level, "AA");
+  assert.equal(
+    merged.accessibility.issues.find((issue) => issue.id === "inactive-tab-contrast").status,
+    "open",
+  );
+  assert.equal(merged.provenance.status, "blocked");
+  assert.ok(
+    merged.provenance.publication_blockers.some((blocker) =>
+      blocker.includes("Image credits and licences are unresolved"),
+    ),
+  );
+  assert.equal(merged.provenance.evidence_count, structuredEvidenceCount(merged));
+  const schema = JSON.parse(await readFile(SCHEMA_PATH, "utf8"));
+  const errors = [];
+  validateAgainstSchema(merged, schema, "$", errors);
+  assert.deepEqual(errors, []);
 });

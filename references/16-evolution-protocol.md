@@ -6,22 +6,23 @@
 
 `examples/README.md` is the canonical index:
 
-| Client | Status | Framework | Archetype | Score | Fingerprint | Audited |
-|---|---|---|---|---|---|---|
-| African Bison | Complete | v1 | Explorer / Luxury / Hospitality | 88 | Explorer-Luxury | 2026-10-19 |
-| Queensland Nuts | Queued | - | - | - | - | - |
-| Muta Automations | Queued | - | - | - | - | - |
-| TCDL | Queued | - | - | - | - | - |
+| Client | Status | Release | Framework | Archetype | Score | Fingerprint | Audited |
+|---|---|---|---|---|---|---|---|
+| African Bison | Audit complete | Blocked: 2 open P0s | v1 | Explorer / Luxury / Hospitality | 88 | Explorer-Luxury | 2026-10-19 |
+| Queensland Nuts | Queued | - | - | - | - | - | - |
+| Muta Automations | Queued | - | - | - | - | - | - |
+| TCDL | Queued | - | - | - | - | - | - |
 
 Statuses:
 
 - `queued`: source identified, no audit started.
 - `in-progress`: evidence collection underway.
-- `complete`: validation passed.
-- `blocked`: authorisation, access, or licence issue.
+- `audit-complete`: the audit and DNA are finished and schema-valid.
+- `released`: the generated skill is validated and no P0 finding is open.
+- `blocked`: authorisation, access, or licence issue prevents release.
 - `superseded`: replaced by a newer version or merge.
 
-Never mark a client complete without a validated skill and resolved P0 findings.
+Never mark a client `released` without a validated skill and resolved P0 findings. `audit-complete` is not a publication claim.
 
 ## Adding a client
 
@@ -57,7 +58,7 @@ Re-audit when:
 - the DNA is merged into a new house system;
 - more than 12 months have passed for an active client.
 
-A re-audit produces a new `meta.version`. Do not edit a completed audit silently.
+A re-audit produces a new `meta.version`. Do not edit an `audit-complete` or `released` audit silently.
 
 ## Versioning
 
@@ -69,7 +70,7 @@ A framework change that alters phase definitions or score weights requires a new
 
 ### DNA package
 
-- `1.0.0`: first complete, validated audit.
+- `1.0.0`: first validated audit.
 - `1.1.0`: new components or pages, no breaking change.
 - `2.0.0`: changed tokens, archetype, or rules that alter generated output.
 
@@ -95,15 +96,17 @@ Do not delete evidence. Keep the audit history.
 
 ## Quality gates
 
-A client row can be `complete` only when:
+A client row can be `audit-complete` when:
 
 - the audit follows Framework v1;
 - the score totals 100;
 - the fingerprint uses the controlled vocabulary;
 - every component has confidence and evidence;
-- the generated skill passes validation;
+- the DNA passes schema validation;
 - provenance and licences are recorded;
-- P0 issues are either resolved or explicitly listed as blockers.
+- P0 issues are either resolved or explicitly listed as publication blockers.
+
+A client row can be `released` only when the `audit-complete` gates pass, the generated skill validates, and no P0 issue is open.
 
 ## Merge cadence
 

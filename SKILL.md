@@ -268,7 +268,7 @@ Read [references/09-design-decision-engine.md](references/09-design-decision-eng
 ### Phase 11 - Skill generation
 
 1. Copy the audit template and complete every phase.
-2. Build `design-dna.json` from [templates/design-dna.json](templates/design-dna.json).
+2. Copy [templates/design-dna.json](templates/design-dna.json) and replace every placeholder. The template is not valid DNA until provenance, accessibility, rules, and evidence are real. Set `provenance.status` to `audit-complete` or `blocked`; a blocked audit must list `publication_blockers`.
 3. Scaffold the generated skill (this compiles the AI layer):
 
 ```bash
@@ -309,7 +309,7 @@ The validator checks:
 - unresolved placeholders;
 - provenance.
 
-Record source, licence, restrictions, evidence count, known gaps, and audit limits. Do not call an audit complete while P0 licence or accessibility findings are unresolved.
+Record source, licence, restrictions, evidence count, known gaps, and audit limits. An audit may be `audit-complete` with open P0 findings, but it must list them as `publication_blockers` and cannot be `released` until they are resolved.
 
 ## Design archetypes
 
@@ -355,7 +355,7 @@ node scripts/merge-dna.mjs \
   --out generated/premium-web-dna-v2.json
 ```
 
-The merge engine preserves sources, records conflicts, combines corroborated component confidence, and emits a merge report plus provenance.
+The merge engine preserves sources, records conflicts, merges surfaces and accessibility evidence, combines corroborated component confidence, and emits a merge report plus provenance with release status and blockers.
 
 Read [references/13-dna-merge-engine.md](references/13-dna-merge-engine.md).
 
@@ -363,7 +363,7 @@ Read [references/13-dna-merge-engine.md](references/13-dna-merge-engine.md).
 
 The repository is a design-intelligence library, not a one-off deliverable.
 
-- Completed audits live in `examples/<client>/`.
+- Audit-complete and blocked audits live in `examples/<client>/`.
 - Queued clients are listed without invented data.
 - New audits use `examples/_template/`.
 - Re-audit when the source changes materially, the framework version changes, or a P0 finding is resolved.
@@ -419,7 +419,7 @@ Read [references/16-evolution-protocol.md](references/16-evolution-protocol.md).
 - [ ] Conversion ladder and CTA hierarchy documented
 - [ ] Premium score totals exactly 100 and band assigned
 - [ ] Fingerprint fields use the controlled vocabulary
-- [ ] `design-dna.json` is valid and complete
+- [ ] `design-dna.json` is schema-valid and its release status and blockers are recorded
 - [ ] `ai-rules.json` and `fingerprints.json` match the DNA
 - [ ] Generated skill passes `validate-dna-skill.mjs`
 - [ ] Provenance and limitations recorded
